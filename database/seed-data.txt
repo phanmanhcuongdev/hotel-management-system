@@ -1,0 +1,33 @@
+-- Roles
+INSERT INTO roles (name) VALUES
+  ('ADMIN'),
+  ('STAFF'),
+  ('CUSTOMER');
+
+-- Users (password plain text cho demo)
+INSERT INTO users (username, password, full_name, role_id) VALUES
+  ('admin', 'admin123', 'Admin User', 1),
+  ('staff1', 'staff123', 'Staff One', 2),
+  ('customer1', 'cust123', 'Customer One', 3);
+
+-- Room types
+INSERT INTO room_types (name, price, capacity) VALUES
+  ('Single', 500000.00, 1),
+  ('Double', 800000.00, 2),
+  ('VIP', 1500000.00, 4);
+
+-- Rooms
+INSERT INTO rooms (room_number, room_type_id, status) VALUES
+  ('101', 1, 'AVAILABLE'),
+  ('102', 1, 'AVAILABLE'),
+  ('201', 2, 'BOOKED'),
+  ('202', 2, 'AVAILABLE'),
+  ('301', 3, 'MAINTENANCE');
+
+-- Bookings
+INSERT INTO bookings (user_id, room_id, check_in, check_out, status) VALUES
+  (3, 3, '2026-02-10', '2026-02-12', 'CONFIRMED');
+
+-- Payments
+INSERT INTO payments (booking_id, amount, method, status) VALUES
+  (1, 1600000.00, 'CASH', 'PAID');
