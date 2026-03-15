@@ -4,7 +4,7 @@ spring:
       backend
 
   datasource:
-    url: jdbc:mysql://192.168.100.232:3306/hotel_management
+    url: jdbc:mysql://192.168.20.40:3306/hotel_management
     username: cuongdso
     password: Pcuong@2411
 
