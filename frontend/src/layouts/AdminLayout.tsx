@@ -1,69 +1,145 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { useAuth } from '../features/auth/useAuth'
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Rooms', href: '/rooms', icon: RoomIcon },
-  { name: 'Bookings', href: '/bookings', icon: BookingIcon },
+  { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
+  { name: 'Phòng nghỉ', href: '/rooms', icon: 'bed' },
+  { name: 'Đặt phòng', href: '/bookings', icon: 'book_online' },
 ]
 
-function HomeIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-    </svg>
-  )
-}
-
-function RoomIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819" />
-    </svg>
-  )
-}
-
-function BookingIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-    </svg>
-  )
-}
-
 export default function AdminLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const { pathname } = useLocation()
+  const { user, logout } = useAuth()
+
+  const currentPage = useMemo(() => {
+    const activeItem = navigation.find((item) => pathname.startsWith(item.href))
+    return activeItem?.name ?? 'Dashboard'
+  }, [pathname])
+
+  if (!user) return null
+
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-lg">
-        <div className="flex h-16 items-center justify-center border-b">
-          <h1 className="text-xl font-bold text-primary-600">Hotel Admin</h1>
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-slate-900 text-white transition-all duration-300 lg:static lg:translate-x-0 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex h-20 items-center gap-3 px-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-500/20">
+            <span className="material-symbols-outlined text-[24px]">apartment</span>
+          </div>
+          <span className="text-xl font-bold tracking-tight">Grand <span className="text-primary-400">Hub</span></span>
         </div>
-        <nav className="mt-6 px-3">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`
-              }
+
+        <div className="mt-4 flex-1 px-4 py-4">
+          <p className="mb-4 px-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Menu quản trị</p>
+          <nav className="space-y-1.5">
+            {navigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                    isActive
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`
+                }
+              >
+                <span className={`material-symbols-outlined text-[22px] transition-colors`}>
+                  {item.icon}
+                </span>
+                {item.name}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mt-auto p-4">
+          <div className="rounded-2xl bg-slate-800/50 p-4 border border-slate-700/50">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 font-bold text-primary-400 border border-slate-600">
+                {user.initials}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="truncate text-sm font-bold text-white">{user.name}</p>
+                <p className="truncate text-xs text-slate-500">{user.role}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-700/50 py-2.5 text-xs font-bold text-slate-300 transition-all hover:bg-red-500/10 hover:text-red-400"
             >
-              <item.icon className="h-5 w-5" />
-              {item.name}
-            </NavLink>
-          ))}
-        </nav>
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              Đăng xuất
+            </button>
+          </div>
+        </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <Outlet />
-        </div>
-      </main>
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 lg:hidden"
+            >
+              <span className="material-symbols-outlined">menu</span>
+            </button>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-slate-900">{currentPage}</h2>
+              <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                <span>Trang chủ</span>
+                <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span className="text-primary-600">{currentPage}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50">
+              <span className="material-symbols-outlined">notifications</span>
+            </button>
+            <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
+            <div className="flex items-center gap-3 pl-1">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-slate-900">{user.name}</p>
+                <p className="text-[11px] font-medium text-green-600 flex items-center justify-end gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                  Đang trực tuyến
+                </p>
+              </div>
+              <img 
+                src={`https://ui-avatars.com/api/?name=${user.name}&background=eff6ff&color=2563eb&bold=true`} 
+                className="h-10 w-10 rounded-xl border-2 border-white shadow-sm"
+                alt="Avatar"
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Viewport */}
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+          <div className="mx-auto max-w-7xl">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

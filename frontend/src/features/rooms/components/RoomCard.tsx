@@ -12,84 +12,99 @@ interface RoomCardProps {
   onClick?: () => void
 }
 
-const statusColors: Record<string, { bg: string; border: string; text: string }> = {
-  AVAILABLE: { bg: 'bg-green-500', border: 'border-green-500', text: 'text-green-700' },
-  OCCUPIED: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-700' },
-  MAINTENANCE: { bg: 'bg-red-500', border: 'border-red-500', text: 'text-red-700' },
-  DIRTY: { bg: 'bg-yellow-500', border: 'border-yellow-500', text: 'text-yellow-700' },
-  RESERVED: { bg: 'bg-blue-500', border: 'border-blue-500', text: 'text-blue-700' },
-}
-
-const typeAbbreviations: Record<string, string> = {
-  'Standard': 'STD',
-  'Deluxe': 'DLX',
-  'Suite': 'STE',
-  'Double': 'DBL',
-  'Single': 'SGL',
-}
-
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr)
-  const day = date.getDate().toString().padStart(2, '0')
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const hours = date.getHours().toString().padStart(2, '0')
-  const mins = date.getMinutes().toString().padStart(2, '0')
-  return `${day}/${month} ${hours}:${mins}`
-}
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat('en-US').format(price)
+const statusConfigs: Record<string, { 
+  bg: string; 
+  iconBg: string; 
+  text: string; 
+  label: string; 
+  icon: string;
+  gradient: string;
+}> = {
+  AVAILABLE: { 
+    bg: 'bg-emerald-50/50', 
+    iconBg: 'bg-emerald-500', 
+    text: 'text-emerald-700', 
+    label: 'Sẵn sàng', 
+    icon: 'check_circle',
+    gradient: 'from-emerald-500 to-teal-400'
+  },
+  OCCUPIED: { 
+    bg: 'bg-rose-50/50', 
+    iconBg: 'bg-rose-500', 
+    text: 'text-rose-700', 
+    label: 'Đang ở', 
+    icon: 'person_pin',
+    gradient: 'from-rose-500 to-orange-400'
+  },
+  MAINTENANCE: { 
+    bg: 'bg-slate-50/50', 
+    iconBg: 'bg-slate-500', 
+    text: 'text-slate-700', 
+    label: 'Bảo trì', 
+    icon: 'build',
+    gradient: 'from-slate-600 to-slate-400'
+  },
 }
 
 export function RoomCard({ room, booking, onClick }: RoomCardProps) {
-  const colors = statusColors[room.status] || statusColors.AVAILABLE
-  const typeAbbr = typeAbbreviations[room.type.name] || room.type.name.substring(0, 3).toUpperCase()
-  const isOccupied = room.status === 'OCCUPIED' && booking
+  const config = statusConfigs[room.status] || statusConfigs.AVAILABLE
+  const isOccupied = room.status === 'OCCUPIED'
+  const roomTypeName = room.type?.name ?? 'Room'
 
   return (
     <div
       onClick={onClick}
-      className={`flex bg-white rounded-lg border-2 ${colors.border} overflow-hidden cursor-pointer hover:shadow-lg transition-shadow min-h-[100px]`}
+      className={`group relative flex flex-col overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer ${config.bg}`}
     >
-      {/* Left sidebar - Room info */}
-      <div className={`${colors.bg} w-14 flex flex-col items-center justify-center text-white py-2 flex-shrink-0`}>
-        <span className="text-[10px] font-medium opacity-90">{typeAbbr}</span>
-        <span className="text-xl font-bold">{room.roomNumber}</span>
-        <div className="mt-1">
-          <svg className="w-4 h-4 opacity-75" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      {/* Status Badge */}
+      <div className="flex items-center justify-between mb-4">
+        <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${config.text} bg-white shadow-sm`}>
+          <span className={`h-1.5 w-1.5 rounded-full ${config.iconBg} animate-pulse`} />
+          {config.label}
+        </div>
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          {roomTypeName}
+        </span>
+      </div>
+
+      {/* Room Number & Main Info */}
+      <div className="flex items-end gap-3 mb-6">
+        <div className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg shadow-slate-200 transition-transform duration-300 group-hover:scale-110 ${config.gradient}`}>
+          <span className="text-2xl font-black italic">{room.roomNumber}</span>
+        </div>
+        <div className="mb-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Tầng {Math.floor(parseInt(room.roomNumber)/100)}</p>
+          <p className="text-sm font-black text-slate-900 leading-none">{roomTypeName}</p>
         </div>
       </div>
 
-      {/* Right content - Booking info */}
-      <div className="flex-1 p-3 min-w-0">
-        {isOccupied ? (
-          <>
-            <div className="flex items-center gap-1.5 mb-1">
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span className="font-semibold text-gray-800 truncate">{booking.guestName}</span>
+      {/* Guest/Booking Info */}
+      <div className="mt-auto">
+        {isOccupied && booking ? (
+          <div className="rounded-2xl bg-white/60 backdrop-blur-sm p-3 border border-white">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-[16px] text-slate-400">person</span>
+              <span className="text-xs font-bold text-slate-900 truncate">{booking.guestName}</span>
             </div>
-            <p className="text-xs text-gray-500 mb-1">
-              {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
-            </p>
-            {booking.company && (
-              <p className="text-xs text-gray-400 truncate mb-1">{booking.company}</p>
-            )}
-            <p className={`text-sm font-semibold ${colors.text}`}>
-              ${formatPrice(booking.price)}
-            </p>
-          </>
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[16px] text-slate-400">calendar_today</span>
+              <span className="text-[10px] font-medium text-slate-500">Out: {booking.checkOut}</span>
+            </div>
+          </div>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <span className="text-sm text-gray-400">
-              {room.status === 'AVAILABLE' ? 'Available' :
-               room.status === 'MAINTENANCE' ? 'Maintenance' : 'Unavailable'}
-            </span>
+          <div className="flex items-center justify-center py-4 rounded-2xl border border-dashed border-slate-200">
+             <span className="material-symbols-outlined text-[20px] text-slate-300">add_circle</span>
           </div>
         )}
+      </div>
+
+      {/* Hover Action Overlay */}
+      <div className="absolute inset-0 bg-slate-900/0 transition-colors duration-300 group-hover:bg-slate-900/5 flex items-center justify-center pointer-events-none">
+        <div className="translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          <div className="rounded-full bg-white px-4 py-2 text-xs font-bold shadow-lg text-slate-900">
+            Xem chi tiết
+          </div>
+        </div>
       </div>
     </div>
   )

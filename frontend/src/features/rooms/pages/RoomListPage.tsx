@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
-import { RoomStatusTabs, RoomFilterBar, RoomGridView, RoomTable, RoomFormModal, ChangeStatusModal } from '../components'
+import { RoomStatusTabs, RoomGridView, RoomTable, RoomFormModal, ChangeStatusModal } from '../components'
 import { useRooms, useUpdateRoom } from '../hooks/useRooms'
 import { mockBookings } from '../../../data/mockData'
+import { Button } from '../../../components/ui'
 import type { Room, RoomStatus } from '../../../types'
 
 type FilterType = 'booking' | 'type' | 'floor' | 'room'
@@ -10,7 +11,7 @@ type StatusFilter = 'all' | 'available' | 'reserved' | 'checkin' | 'occupied' | 
 
 export default function RoomListPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [activeFilter, setActiveFilter] = useState<FilterType>('floor')
+  const [activeFilter] = useState<FilterType>('floor')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [searchValue, setSearchValue] = useState('')
   const [isFormModalOpen, setFormModalOpen] = useState(false)
@@ -20,17 +21,8 @@ export default function RoomListPage() {
   const { data: rooms = [], isLoading } = useRooms()
   const updateRoom = useUpdateRoom()
 
-  // Calculate status counts
   const statusCounts = useMemo(() => {
-    const counts = {
-      all: rooms.length,
-      available: 0,
-      reserved: 0,
-      checkin: 0,
-      occupied: 0,
-      checkout: 0,
-      dirty: 0,
-    }
+    const counts = { all: rooms.length, available: 0, reserved: 0, checkin: 0, occupied: 0, checkout: 0, dirty: 0 }
     rooms.forEach((room) => {
       if (room.status === 'AVAILABLE') counts.available++
       else if (room.status === 'OCCUPIED') counts.occupied++
@@ -40,38 +32,21 @@ export default function RoomListPage() {
   }, [rooms])
 
   const statusTabs = [
-    { key: 'available', label: 'Available', count: statusCounts.available, color: 'text-green-600' },
-    { key: 'reserved', label: 'Reserved', count: statusCounts.reserved, color: 'text-blue-600' },
-    { key: 'checkin', label: 'Arriving', count: statusCounts.checkin, color: 'text-purple-600' },
-    { key: 'occupied', label: 'Occupied', count: statusCounts.occupied, color: 'text-orange-600' },
-    { key: 'checkout', label: 'Departing', count: statusCounts.checkout, color: 'text-yellow-600' },
-    { key: 'dirty', label: 'Dirty', count: statusCounts.dirty, color: 'text-red-600' },
+    { key: 'all', label: 'Tất cả', count: statusCounts.all, color: 'text-slate-600' },
+    { key: 'available', label: 'Sẵn sàng', count: statusCounts.available, color: 'text-emerald-600' },
+    { key: 'occupied', label: 'Đang ở', count: statusCounts.occupied, color: 'text-rose-600' },
+    { key: 'dirty', label: 'Bảo trì', count: statusCounts.dirty, color: 'text-slate-400' },
   ]
 
-  // Filter rooms
   const filteredRooms = useMemo(() => {
     let result = rooms
-
-    // Filter by status
-    if (statusFilter === 'available') {
-      result = result.filter((r) => r.status === 'AVAILABLE')
-    } else if (statusFilter === 'occupied') {
-      result = result.filter((r) => r.status === 'OCCUPIED')
-    } else if (statusFilter === 'dirty') {
-      result = result.filter((r) => r.status === 'MAINTENANCE')
-    }
-
-    // Filter by search
-    if (searchValue) {
-      result = result.filter((r) =>
-        r.roomNumber.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    }
-
+    if (statusFilter === 'available') result = result.filter((r) => r.status === 'AVAILABLE')
+    else if (statusFilter === 'occupied') result = result.filter((r) => r.status === 'OCCUPIED')
+    else if (statusFilter === 'dirty') result = result.filter((r) => r.status === 'MAINTENANCE')
+    if (searchValue) result = result.filter((r) => r.roomNumber.toLowerCase().includes(searchValue.toLowerCase()))
     return result
   }, [rooms, statusFilter, searchValue])
 
-  // Add mock booking data to rooms
   const roomsWithBookings = useMemo(() => {
     return filteredRooms.map((room) => ({
       ...room,
@@ -98,80 +73,94 @@ export default function RoomListPage() {
     }
   }
 
-  const groupBy = activeFilter === 'floor' ? 'floor' : activeFilter === 'type' ? 'type' : 'none'
-
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Room Management</h1>
+    <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black italic text-slate-900 tracking-tight uppercase">Sơ đồ phòng nghỉ</h1>
+          <p className="mt-1 text-slate-500 font-medium">Theo dõi và vận hành trạng thái phòng thời gian thực.</p>
+        </div>
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+          <button 
+            onClick={() => setViewMode('grid')}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'grid' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
+          >
+            <span className="material-symbols-outlined text-[20px]">grid_view</span>
+          </button>
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'list' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
+          >
+            <span className="material-symbols-outlined text-[20px]">view_list</span>
+          </button>
+        </div>
       </div>
 
-      {/* Status tabs */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-4 pt-4">
-          <RoomStatusTabs
-            tabs={statusTabs}
-            activeTab={statusFilter}
-            onTabChange={(key) => setStatusFilter(key as StatusFilter)}
-          />
+      {/* Main Dashboard Area */}
+      <div className="space-y-6">
+        {/* Filter Toolbar */}
+        <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center">
+          <div className="flex-1 bg-white p-2 rounded-[2rem] border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
+            <RoomStatusTabs
+              tabs={statusTabs}
+              activeTab={statusFilter}
+              onTabChange={(key) => setStatusFilter(key as StatusFilter)}
+            />
+          </div>
+          
+          <div className="xl:w-80 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex items-center px-4 group focus-within:ring-2 focus-within:ring-primary-100 transition-all">
+            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
+            <input 
+              type="text" 
+              placeholder="Tìm số phòng..."
+              className="w-full bg-transparent border-none outline-none px-3 py-2 text-sm font-bold text-slate-900 placeholder:text-slate-300"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+            />
+          </div>
+
+          <Button 
+            onClick={() => setFormModalOpen(true)}
+            className="rounded-2xl bg-slate-900 py-6 px-6 shadow-xl shadow-slate-200"
+          >
+            <span className="material-symbols-outlined mr-2">add</span>
+            Thêm Phòng
+          </Button>
         </div>
 
-        {/* Filter bar */}
-        <div className="px-4">
-          <RoomFilterBar
-            activeFilter={activeFilter}
-            onFilterChange={setActiveFilter}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            searchValue={searchValue}
-            onSearchChange={setSearchValue}
-          />
-        </div>
-
-        {/* Room content */}
-        <div className="p-4">
+        {/* Room Display Area */}
+        <div className="min-h-[400px]">
           {viewMode === 'grid' ? (
             <RoomGridView
               rooms={roomsWithBookings}
               loading={isLoading}
-              groupBy={groupBy}
+              groupBy={activeFilter === 'floor' ? 'floor' : 'type'}
               onRoomClick={handleRoomClick}
             />
           ) : (
-            <RoomTable
-              rooms={filteredRooms}
-              loading={isLoading}
-              onEdit={(room) => {
-                setSelectedRoom(room)
-                setFormModalOpen(true)
-              }}
-              onChangeStatus={handleRoomClick}
-            />
+            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
+              <RoomTable
+                rooms={filteredRooms}
+                loading={isLoading}
+                onEdit={(room) => { setSelectedRoom(room); setFormModalOpen(true); }}
+                onChangeStatus={handleRoomClick}
+              />
+            </div>
           )}
         </div>
       </div>
 
       <RoomFormModal
         isOpen={isFormModalOpen}
-        onClose={() => {
-          setFormModalOpen(false)
-          setSelectedRoom(null)
-        }}
-        onSubmit={(data) => {
-          console.log('Form submitted:', data)
-          setFormModalOpen(false)
-          setSelectedRoom(null)
-        }}
+        onClose={() => { setFormModalOpen(false); setSelectedRoom(null); }}
+        onSubmit={(data) => { console.log('Form submitted:', data); setFormModalOpen(false); setSelectedRoom(null); }}
         room={selectedRoom || undefined}
       />
 
       <ChangeStatusModal
         isOpen={isStatusModalOpen}
-        onClose={() => {
-          setStatusModalOpen(false)
-          setSelectedRoom(null)
-        }}
+        onClose={() => { setStatusModalOpen(false); setSelectedRoom(null); }}
         onSubmit={handleStatusUpdate}
         room={selectedRoom}
         loading={updateRoom.isPending}

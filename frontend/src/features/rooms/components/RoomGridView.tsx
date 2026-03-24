@@ -34,7 +34,7 @@ function groupRoomsByFloor(rooms: RoomWithBooking[]): Record<string, RoomWithBoo
 
 function groupRoomsByType(rooms: RoomWithBooking[]): Record<string, RoomWithBooking[]> {
   return rooms.reduce((acc, room) => {
-    const key = room.type.name
+    const key = room.type?.name ?? 'Unknown Type'
     if (!acc[key]) {
       acc[key] = []
     }

@@ -1,10 +1,22 @@
-import axios from "./axios";
+import { apiClient } from './client'
 
-export const login = async (username: string, password: string) => {
-    const res = await axios.post("/auth/login", {
-       username,
-       password,
-    });
+export interface LoginApiResponse {
+  token?: string
+  accessToken?: string
+  user?: {
+    id?: string | number
+    fullName?: string
+    name?: string
+    email?: string
+    role?: string
+  }
+}
 
-    return res.data;
-};
+export async function login(username: string, password: string) {
+  const response = await apiClient.post<LoginApiResponse>('/auth/login', {
+    username,
+    password,
+  })
+
+  return response.data
+}
