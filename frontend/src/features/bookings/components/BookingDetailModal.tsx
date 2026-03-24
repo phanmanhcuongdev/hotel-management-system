@@ -39,7 +39,7 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
           </div>
           <div>
             <p className="text-sm text-gray-500">Room</p>
-            <p className="mt-1 font-medium">{booking.room.roomNumber}</p>
+            <p className="mt-1 font-medium">{booking.room?.roomNumber ?? '---'}</p>
           </div>
         </div>
 

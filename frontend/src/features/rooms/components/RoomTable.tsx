@@ -10,6 +10,10 @@ interface RoomTableProps {
 }
 
 export function RoomTable({ rooms, loading, onEdit, onChangeStatus }: RoomTableProps) {
+  const getRoomTypeName = (room: Room) => room.type?.name ?? 'Unknown type'
+  const getRoomCapacity = (room: Room) => room.type?.capacity ?? 0
+  const getRoomPrice = (room: Room) => room.type?.price ?? 0
+
   const columns = [
     {
       key: 'roomNumber',
@@ -21,17 +25,17 @@ export function RoomTable({ rooms, loading, onEdit, onChangeStatus }: RoomTableP
     {
       key: 'type',
       header: 'Type',
-      render: (room: Room) => room.type.name,
+      render: (room: Room) => getRoomTypeName(room),
     },
     {
       key: 'capacity',
       header: 'Capacity',
-      render: (room: Room) => `${room.type.capacity} guests`,
+      render: (room: Room) => `${getRoomCapacity(room)} guests`,
     },
     {
       key: 'price',
       header: 'Price/Night',
-      render: (room: Room) => `$${room.type.price.toLocaleString()}`,
+      render: (room: Room) => `$${getRoomPrice(room).toLocaleString()}`,
     },
     {
       key: 'status',

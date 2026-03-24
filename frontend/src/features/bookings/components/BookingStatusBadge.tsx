@@ -2,7 +2,7 @@ import { Badge } from '../../../components/ui'
 import type { BookingStatus } from '../../../types'
 
 interface BookingStatusBadgeProps {
-  status: BookingStatus
+  status: BookingStatus | string
 }
 
 const statusConfig: Record<BookingStatus, { label: string; variant: 'success' | 'warning' | 'danger' | 'info' | 'default' }> = {
@@ -13,6 +13,6 @@ const statusConfig: Record<BookingStatus, { label: string; variant: 'success' | 
 }
 
 export function BookingStatusBadge({ status }: BookingStatusBadgeProps) {
-  const config = statusConfig[status]
+  const config = statusConfig[status as BookingStatus] ?? { label: status || 'Unknown', variant: 'default' as const }
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
