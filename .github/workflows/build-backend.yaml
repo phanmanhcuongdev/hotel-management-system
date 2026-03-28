@@ -1,13 +1,34 @@
+<<<<<<< Updated upstream
 name: Build Backend Image
+=======
+name: Build and Push Backend Image
+>>>>>>> Stashed changes
 
 on:
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - 'backend/**'
+      - '.github/workflows/build-backend.yaml'
   push:
     branches:
+<<<<<<< Updated upstream
       - main
       - 'release/*'
 
 jobs:
   backend:
+=======
+      - 'release/**'
+    paths:
+      - 'backend/**'
+      - '.github/workflows/build-backend.yaml'
+  workflow_dispatch:
+
+jobs:
+  build-backend:
+>>>>>>> Stashed changes
     runs-on: ubuntu-latest
 
     permissions:
@@ -15,12 +36,17 @@ jobs:
       packages: write
 
     env:
+<<<<<<< Updated upstream
       IMAGE: ghcr.io/${{ github.repository_owner }}/hotel-backend
+=======
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hotel-backend
+>>>>>>> Stashed changes
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+<<<<<<< Updated upstream
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
@@ -38,9 +64,35 @@ jobs:
           docker build \
             -t $IMAGE:${{ steps.vars.outputs.TAG }} \
             -t $IMAGE:${{ github.sha }} \
+=======
+      - name: Prepare tags
+        id: prep
+        run: |
+          DATE_TAG="release-$(date +'%Y%m%d')"
+          SHORT_SHA="${GITHUB_SHA::7}"
+
+          echo "date_tag=$DATE_TAG" >> $GITHUB_OUTPUT
+          echo "sha_tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name == 'push'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }} \
+            -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}-${{ steps.prep.outputs.sha_tag }} \
+>>>>>>> Stashed changes
             ./backend
 
       - name: Push backend image
+        if: github.event_name == 'push'
         run: |
+<<<<<<< Updated upstream
           docker push $IMAGE:${{ steps.vars.outputs.TAG }}
           docker push $IMAGE:${{ github.sha }}
+=======
+          docker push $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}
+          docker push $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}-${{ steps.prep.outputs.sha_tag }}
+>>>>>>> Stashed changes
