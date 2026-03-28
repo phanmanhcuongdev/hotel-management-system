@@ -1,0 +1,57 @@
+name: Build and Push Frontend Image
+
+on:
+  pull_request:
+    branches:
+      - 'release/**'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/build-frontend.yaml'
+  push:
+    branches:
+      - 'release/**'
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/build-frontend.yaml'
+  workflow_dispatch:
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hotel-frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare tags
+        id: prep
+        run: |
+          DATE_TAG="release-$(date +'%Y%m%d')"
+          SHORT_SHA="${GITHUB_SHA::7}"
+
+          echo "date_tag=$DATE_TAG" >> $GITHUB_OUTPUT
+          echo "sha_tag=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name == 'push'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build frontend image
+        run: |
+          docker build \
+            -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }} \
+            -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}-${{ steps.prep.outputs.sha_tag }} \
+            ./frontend
+
+      - name: Push frontend image
+        if: github.event_name == 'push'
+        run: |
+          docker push $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}
+          docker push $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}-${{ steps.prep.outputs.sha_tag }}
