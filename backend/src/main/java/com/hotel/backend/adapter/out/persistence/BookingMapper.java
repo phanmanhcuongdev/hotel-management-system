@@ -13,7 +13,10 @@ public final class BookingMapper {
                 e.roomId,
                 e.checkIn,
                 e.checkOut,
-                BookingStatus.valueOf(e.status)
+                BookingStatus.valueOf(e.status),
+                e.guestName,
+                e.phoneNumber,
+                e.email
         );
     }
 
@@ -25,6 +28,9 @@ public final class BookingMapper {
         e.checkIn = b.checkIn();
         e.checkOut = b.checkOut();
         e.status = b.status().name();
+        e.guestName = b.guestName();
+        e.phoneNumber = b.phoneNumber();
+        e.email = b.email();
         return e;
     }
 }

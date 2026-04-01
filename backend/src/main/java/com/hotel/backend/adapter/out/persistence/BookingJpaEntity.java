@@ -25,4 +25,13 @@ public class BookingJpaEntity {
 
     @Column(name = "status")
     public String status;
+
+    @Column(name = "guest_name")
+    public String guestName;
+
+    @Column(name = "phone_number")
+    public String phoneNumber;
+
+    @Column(name = "email")
+    public String email;
 }

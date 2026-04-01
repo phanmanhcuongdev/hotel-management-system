@@ -1,29 +1,29 @@
 # Kiến trúc hệ thống
 
-## 1. Bố cục tầng
-- **Frontend** (`frontend/`): Vite + React 18 + TypeScript với router `frontend/src/App.tsx` (login + admin shell). `AdminLayout` render sidebar + `<Outlet />` cho `dashboard`, `rooms`, `bookings`. Hooks TanStack Query (`frontend/src/features/*/hooks`) điều phối dữ liệu, các component UI nằm trong `frontend/src/components/ui`. Axios client nằm ở `frontend/src/api/client.ts`, nhưng hooks hiện dùng `fetch` trực tiếp.
-- **Backend** (`backend/`): Spring Boot 4 với entry `BackendApplication`, cấu hình beans trong `BeanConfig`. Hexagonal architecture: controller lớp `adapter/in/web`, domain service `application/domain/service`, port interfaces `application/port`, persistence adapter `adapter/out/persistence`. Chỉ có hai API: `RoomController` (`GET /api/rooms?status=...`) và `BookingController` (`POST /api/bookings`).
-- **Database** (`database/hotel-management.sql`): MySQL schema `hotel_management` với bảng `tblHotel`, `tblRoom`, `tblBooking`, `tblBookedRoom`, `tblUsedService`, `tblBill`, `tblUser`, `tblClient`, `tblService`. Quan hệ `room` ➜ `hotel`, `booking` liên kết `client/user`, `bookedRoom` kết nối booking/room, `usedService` nối service/bookedRoom, `bill` nối booking/user.
+`docs/` là nơi mô tả kiến trúc thực tế. Khi thay đổi tầng nào (frontend/backend/db), hãy cập nhật file tương ứng.
 
-## 2. Luồng dữ liệu điển hình
-1. **Danh sách phòng**: `RoomListPage` (feature/rooms) gọi hook `useRooms` → `fetch('/api/rooms?...')` → `RoomController.getRooms` → `GetRoomsService` → `RoomPersistenceAdapter` → `SpringDataRoomRepository`. Trả về DTO `RoomResponse`.
-2. **Tạo booking**: `CreateBookingModal` gọi `useCreateBooking` → POST body tới `/api/bookings` → `BookingController.create` gọi `CreateBookingUseCase` và `LoadRoomPort` → lưu booking (`SaveBookingPort`).
-3. **Router**: mặc định `/` redirect sang `/dashboard`. Khi `<Navigate>` đẩy tới `/rooms`/`/bookings`, chưa có route guard nên route không kiểm tra auth.
+## 1. Khối thành phần
+- **Backend** (`backend/`): Spring Boot 4 + Java 21, entry `BackendApplication`. `BeanConfig` biến các adapter (persistence/controller) thành bean. Hexagonal layout rõ qua các thư mục `adapter/in/web`, `application/domain/service`, `application/port`, `adapter/out/persistence`. Hiện chỉ có `RoomController` (`GET /api/rooms`) và `BookingController` (`POST /api/bookings`) nên controller vẫn rất gọn.
+- **Frontend** (`frontend/`): Vite 5 + React 18 + TypeScript. `AuthProvider` + `useAuth` đưa thông tin session vào context, `App.tsx` bảo vệ toàn bộ `/dashboard`, `/rooms`, `/bookings` bằng `ProtectedRoute`, và `PublicOnlyRoute` đưa người dùng authenticated thẳng về `/dashboard`. Layout chính `AdminLayout` chứa menu, header, avatar, nút logout.
+- **Database** (`database/hotel-management.sql`): schema `hotel_management` với bảng `tblHotel`, `tblRoom`, `tblBooking`, `tblBookedRoom`, `tblUsedService`, `tblBill`, `tblUser`, `tblClient`, `tblService`. Tất cả giá `price`/`discount`/`paymentAmount` dùng `FLOAT`.
+- **Docs & workflow**: `docs/` bao gồm overview, architecture, standards; `.github/workflows/build-backend.yaml` build/push docker image trên `main` (không chạy lint/test).
 
-## 3. Kết nối runtime & Dev setup
-- **Dev proxy**: Vite dev server proxy `/api` tới `http://localhost:8080` (`frontend/vite.config.ts`), cho phép `fetch('/api/...')` hoạt động giống production.
-- **CI/CD**: `.github/workflows/build-backend.yaml` checkout repo, build backend và frontend Docker image rồi push lên `ghcr.io/${{ github.repository_owner }}/hotel-backend|hotel-frontend`. Chưa có job lint/test.
-- **Deployment stack**: backend build jar qua Maven wrapper (`mvnw`), frontend build Vite; Dockerfiles copy artifact sau khi build.
+## 2. Luồng dữ liệu & domain
+1. **Danh sách phòng**: `RoomListPage` gọi `useRooms` (TanStack Query). Hook thực hiện `fetch('/api/rooms?status=...')`, `RoomController` trả list `RoomResponse`. Nếu backend lỗi, `useRooms` fallback dùng `mockRooms` vì `USE_DEV_FALLBACK` (true trong DEV). `RoomListPage` vẫn thêm `mockBookings` và `search` logic; `RoomFormModal` chỉ `console.log` submit.
+2. **Tạo booking**: `CreateBookingModal` => `useCreateBooking` (mutation) => `fetch('/api/bookings', POST)` với payload `{userId, roomId, checkIn, checkOut}`. Backend `BookingController` gọi `CreateBookingUseCase` và `LoadRoomPort` để trả phòng hiện tại. `CreateBookingService` chỉ tạo booking `PENDING`, không cập nhật trạng thái phòng.
+3. **Auth & guard**: `authService` mock (DEV) hoặc gọi `authApi` nếu `VITE_ENABLE_REAL_AUTH=true`. Session lưu local/session storage; `apiClient` intercepter thêm Authorization header và emit sự kiện `auth:unauthorized` khi backend trả 401 → `AuthProvider` logout người dùng. `ProtectedRoute` render spinner khi status là `loading` và `Navigate` tới `/login` nếu không authenticated.
 
-## 4. Những khoảng lệch/front-back/db cần theo dõi
-- **Endpoint mismatch**: frontend hook `useBookings` gọi `GET /api/bookings`, còn `useUpdateBooking`, `useCancelBooking` dùng `PUT /api/bookings/:id`; `useRooms` và mutation gọi `POST/PUT/DELETE /api/rooms/:id`. Backend chưa có controller nào tương ứng ngoài `GET /api/rooms` và `POST /api/bookings`.
-- **Auth chưa hoàn chỉnh**: `frontend/src/features/auth/LoginPage.tsx` chỉ render form; backend không có controller `/auth/login`, không có middleware JWT hoặc session. `AdminLayout` và route `/dashboard` không kiểm tra phép.
-- **Configs bị hardcode**: `backend/src/main/resources/application.yaml` chứa `url`, `username`, `password` ra bên ngoài, cần thay bằng env/secret; doc nhắc nhu cầu `TODO`.
-- **Dữ liệu tiền tệ**: `database/hotel-management.sql` dùng `FLOAT` cho `price`, `discount`, `paymentAmount` (ví dụ `tblRoom.price`, `tblService.price`). Cần review để tránh sai số khi tổng tiền/phiếu thu lớn.
-- **Mock data chưa gỡ**: `USE_MOCK = false` nhưng vẫn giữ `mockData`, điều này có thể khiến dev tưởng là backend có đủ API trong khi thực tế chỉ 1 endpoint.
+## 3. Runtime & môi trường phát triển
+- **Backend**: chạy `./mvnw spring-boot:run`. Maven wrapper đảm bảo Java 21 + dependency offline (pom). `application.yaml` hiện chứa URL/username/password; chưa có hướng dẫn đẩy vào env/secret.
+- **Frontend**: chạy `npm install && npm run dev`, Vite dev server proxy `/api` → `http://localhost:8080` (vite.config). `apiClient` base `/api` nhưng hầu hết hook vẫn dùng `fetch`.
+- **CI/Deployment**: `.github/workflows/build-backend.yaml` build Docker image backend/front và push tới GHCR; không chạy lint/test, không kiểm tra DB migration.
 
-## 5. Đề xuất tiếp theo
-1. Bổ sung controller/backing service cho các endpoint booking và room mà frontend đang gọi hoặc cập nhật frontend để dùng đúng API backend (hiện API backend rất hạn chế).
-2. Thêm authentication layer (login route, token storage, route guard) phù hợp với `authApi.ts`/`LoginPage`.
-3. Chuẩn hoá cách gọi API: sử dụng `apiClient`/Axios thay vì `fetch` thủ công, để dễ thêm header Authorization.
-4. Tách config DB khỏi source code, dùng `@ConfigurationProperties` hoặc `spring.config.import`, đồng thời ghi doc cách cung cấp env để build container.
+## 4. Gaps tích hợp & cần theo dõi
+- **API mismatch**: Hooks tạo/cập nhật/xóa phòng (`/api/rooms`, `/api/rooms/:id`) và booking (`GET /api/bookings`, `PUT /api/bookings/:id`) nhưng backend chỉ có `GET /api/rooms` + `POST /api/bookings`. Khi `USE_DEV_FALLBACK=false`, các phần này sẽ lỗi.
+- **Auth chưa có backend thực**: `authApi` giả định `/auth/login`, nhưng backend không có controller đó, chỉ có mock client-side guard. Bất kỳ tính năng liên quan đến token thực cần bổ sung backend.
+- **Config và secrets**: `application.yaml` chứa credential rõ ràng; doc cần mô tả cách cung cấp `SPRING_DATASOURCE_URL/USERNAME/PASSWORD` từ env, đặc biệt nếu container hoá.
+- **DB contract**: JPA entity tìm `rooms`, `room_types`, `bookings` (BigDecimal). Schema `.sql` dùng `tblRoom`, `tblBooking`, `tblHotel`, `FLOAT`. Cần chọn 1 source-of-truth, hoặc viết migration để đồng bộ.
+- **Mock data & UX**: Frontend vẫn giữ `mockData`, modal chỉ log, `activeFilter` không dùng → cần audit khi backend hoàn thiện API để tránh bẫy.
+
+## 5. Next steps tài liệu hóa
+- Lưu ý mọi thay đổi API/Biz logic cần cập nhật `docs/project-overview-pdr.md` (Project/PD), `docs/code-standards.md` (quy tắc/code structure), `docs/codebase-summary.md` (tóm tắt), `docs/system-architecture.md` (luồng). Đây là các nguồn để đồng bộ team.

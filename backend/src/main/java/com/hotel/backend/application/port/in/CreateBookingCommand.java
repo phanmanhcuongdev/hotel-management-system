@@ -6,5 +6,8 @@ public record CreateBookingCommand(
         Long userId,
         Long roomId,
         LocalDate checkIn,
-        LocalDate checkOut
+        LocalDate checkOut,
+        String guestName,
+        String phoneNumber,
+        String email
 ) {}

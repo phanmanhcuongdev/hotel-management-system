@@ -12,10 +12,13 @@ public final class BookingWebMapper {
         return new BookingResponse(
                 booking.id(),
                 booking.userId(),
-                new RoomShortResponse(room.id(), room.roomNumber()),
+                new RoomShortResponse(room.id(), room.roomNumber(), room.type().name()),
                 booking.checkIn(),
                 booking.checkOut(),
-                booking.status().name()
+                booking.status().name(),
+                booking.guestName(),
+                booking.phoneNumber(),
+                booking.email()
         );
     }
 }

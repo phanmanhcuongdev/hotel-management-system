@@ -8,5 +8,8 @@ public record BookingResponse(
         RoomShortResponse room,
         LocalDate checkIn,
         LocalDate checkOut,
-        String status
+        String status,
+        String guestName,
+        String phoneNumber,
+        String email
 ) {}

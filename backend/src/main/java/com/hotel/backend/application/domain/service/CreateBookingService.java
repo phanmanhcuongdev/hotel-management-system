@@ -38,7 +38,10 @@ public class CreateBookingService implements CreateBookingUseCase {
                 cmd.roomId(),
                 cmd.checkIn(),
                 cmd.checkOut(),
-                BookingStatus.PENDING
+                BookingStatus.PENDING,
+                cmd.guestName(),
+                cmd.phoneNumber(),
+                cmd.email()
         );
 
         return saveBookingPort.save(booking);

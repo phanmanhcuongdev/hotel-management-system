@@ -8,5 +8,8 @@ public record Booking(
         Long roomId,
         LocalDate checkIn,
         LocalDate checkOut,
-        BookingStatus status
+        BookingStatus status,
+        String guestName,
+        String phoneNumber,
+        String email
 ) {}

@@ -1,43 +1,46 @@
-# Tổng quan và PDR ban đầu
+# Tổng quan và PDR hiện trạng
 
-## 1. Tổng quan hệ thống
-- **Scope**: `hotel-management-system` là bộ công cụ quản lý khách sạn gồm backend Spring Boot, frontend React/Vite và schema MySQL. Các domain căn bản là phòng (`rooms`), đặt phòng (`bookings`) và dữ liệu tài chính/dịch vụ.
-- **Cấu trúc**: backend theo phong cách hexagonal (ports/adapters) ở `backend/src/main/java/com/hotel/backend`, frontend feature-oriented (`frontend/src/features/*`), database định nghĩa `tbl*` trong `database/hotel-management.sql`.
-- **CI/CD hiện tại**: `.github/workflows/build-backend.yaml` xây dựng và push Docker image cho backend/frontend mỗi khi push lên `main`.
+> `docs/` là nguồn sự thật. Khi có thay đổi API, mô hình hoặc quy trình, cập nhật trực tiếp trong các file ở đây.
 
-## 2. Phạm vi triển khai thực tế
-- **Backend**: chỉ có hai controller: `GET /api/rooms` (có query `status`) và `POST /api/bookings` (`backend/src/main/java/com/hotel/backend/adapter/in/web/*`). Không có endpoint cho cập nhật/xóa phòng, không có `GET /api/bookings` dù frontend gọi.
-- **Frontend**: route `/login`, `/dashboard`, `/rooms`, `/bookings` (`frontend/src/App.tsx`) với layout `AdminLayout`. Hook `useRooms`/`useBookings` gọi `fetch('/api/...')` ngay cả khi `USE_MOCK = false`, nhưng mock data vẫn tồn tại trong `frontend/src/data/mockData.ts`.
-- **API/Networking**: dev server proxy `/api` tới `http://localhost:8080` (`frontend/vite.config.ts`). Axios client nằm ở `frontend/src/api/client.ts`; `authApi.ts` gọi `/auth/login` nhưng backend chưa cung cấp endpoint tương ứng.
-- **Database**: `database/hotel-management.sql` tạo các bảng `tblHotel`, `tblRoom`, `tblBooking`, `tblBookedRoom`, `tblUsedService`, `tblBill`, `tblUser`, `tblClient`, `tblService`. Các trường money là `FLOAT` nên có rủi ro mất độ chính xác.
+## 1. Tóm tắt hệ thống
+- **Backend**: Spring Boot 4 + Java 21, entry `BackendApplication`, `BeanConfig` tiêm `RoomPersistenceAdapter`/`BookingPersistenceAdapter` vào `GetRoomsService` và `CreateBookingService`. Domain model xác định `RoomStatus` (`AVAILABLE`, `BOOKED`, `MAINTENANCE`) và `BookingStatus` (`PENDING`, `CONFIRMED`, `CANCELLED`).
+- **Frontend**: Vite + React 18 + TypeScript; `App.tsx` định tuyến `/login` và toàn bộ `/dashboard`, `/rooms`, `/bookings` bên trong `ProtectedRoute`. Layout `AdminLayout` render sidebar, header và `<Outlet />` cho các page (Dashboard, RoomList, BookingList). Truy vấn dữ liệu thực hiện bằng TanStack Query (`useRooms`, `useBookings`).
+- **Database**: script `database/hotel-management.sql` tạo schema `hotel_management` với các bảng `tblHotel`, `tblRoom`, `tblBooking`, `tblBookedRoom`, `tblUsedService`, `tblBill`, `tblUser`, `tblClient`, `tblService`. Script dùng `FLOAT` cho các trường tiền.
+- **Dev/CI**: Frontend dev server proxy `/api` sang `http://localhost:8080` (vite.config.ts). GH Actions `build-backend.yaml` chỉ build & push Docker image cho backend/frontend trên nhánh `main` mà không chạy lint/test.
 
-## 3. PDR - đánh giá sơ bộ
+## 2. Thực trạng triển khai
 
-### 3.1 Mục tiêu và thực trạng
-- Kết nối frontend/back đang lệ thuộc vào dịch vụ `GET /api/rooms` và `POST /api/bookings` được backend cung cấp. Tất cả thao tác còn lại (xem danh sách booking, cập nhật trạng thái, CRUD phòng) là nhu cầu frontend nhưng chưa có API.
-- Cấu hình MySQL (`application.yaml`) hiện hardcode `url/username/password`; cần tách sang env/secrets để tránh lộ thông tin.
-- Chưa có authentication/authorization trung tâm: login page mới chỉ là UI, không có route guard hay context global.
+- **Backend hiện có**
+  - `GET /api/rooms` (`RoomController.getRooms`): nhận query `status`, gọi `GetRoomsService` → `RoomPersistenceAdapter` → `SpringDataRoomRepository`. Không có các endpoint GET/PUT/DELETE `rooms/{id}` hay `GET /api/bookings/{id}`.
+  - `POST /api/bookings` (`BookingController.create`): tạo booking `PENDING`, không cập nhật lại trạng thái phòng; sau khi lưu trả DTO kết hợp `Booking` và `Room` qua `BookingWebMapper`.
+  - `CreateBookingService` chỉ kiểm tra `RoomStatus.AVAILABLE`, tạo booking mới, không sửa `Room` hay `RoomType` liên quan.
+  - `application.yaml` hardcode URL + credentials (`jdbc:mysql://192.168.20.40:3306/hotel_management`, user/password). Khối `spring.jpa` đặt `ddl-auto: none` và `open-in-view: false`.
 
-### 3.2 Nhận diện rủi ro & điểm chưa hoàn thiện
-1. **Mất đồng bộ contract**: frontend gọi nhiều endpoint REST không tồn tại (`GET /api/bookings`, `GET|PUT|DELETE /api/rooms/:id`, `PUT /api/bookings/:id`). Backend vẫn cần bổ sung các outbound adapter tương ứng.
-2. **Authentication**: backend không có `@Controller` cho `/auth` nên giao diện login chưa kiểm tra hoặc lưu token. Hiện tại chưa có state chia sẻ hoặc bảo vệ route `AdminLayout`.
-3. **Dữ liệu nhạy cảm**: `application.yaml` chứa mật khẩu rõ ràng, cần chuyển sang biến môi trường trước khi deploy.
-4. **Precision tài chính**: Model DB dùng `FLOAT` cho `price`, `discount`, `paymentAmount` (tất cả bảng `tbl*` liên quan). Cần kiểm tra ảnh hưởng khi xử lý tiền tệ (nên dùng DECIMAL nếu cần chính xác).
-5. **Mock data không gỡ**: `USE_MOCK` vẫn ở mức `false` nhưng các hook giữ mã mock; cần xác định trạng thái chuyển tiếp để tránh gọi dữ liệu giả nếu backend chưa sẵn sàng.
+- **Frontend thực tế**
+  - Router sử dụng `ProtectedRoute`/`PublicOnlyRoute` và `AuthProvider` (session lưu trong local/session storage). `authService` mặc định bật mock (`USE_MOCK_AUTH` true trong DEV) và chỉ gọi `authApi` khi `VITE_ENABLE_REAL_AUTH=true`. Khi backend trả 401, `apiClient` emit sự kiện `auth:unauthorized` để logout.
+  - `useRooms`/`useBookings` vẫn gọi `fetch('/api/rooms')`, `fetch('/api/bookings')` thay vì `apiClient`, có cờ `USE_DEV_FALLBACK` (mặc định true trong DEV) để dùng `mockData` nếu API lỗi. Các mutation `useCreateRoom`/`useUpdateRoom`/`useDeleteRoom`/`useUpdateBooking`/`useCancelBooking` gửi POST/PUT/DELETE đến `/api/rooms` hoặc `/api/bookings/:id` dù backend chưa cung cấp.
+  - `RoomListPage` vẫn dựa vào `mockBookings`, `activeFilter` không dùng và modal thêm phòng chỉ `console.log`. `BookingListPage` (với `useBookings`) chưa được backend trả data.
 
-### 3.3 Gợi ý bước tiếp theo
-- Ưu tiên mở rộng API backend để bao phủ các endpoint frontend đã gọi, hoặc cập nhật frontend để chỉ dùng API hiện có.
-- Thêm layer auth/guard (JWT/session) và đồng bộ với `authApi.ts` (tách khỏi API client chung).
-- Di chuyển cấu hình DB ra `application.yaml` qua secrets/`@ConfigurationProperties` và bổ sung doc so sánh `dev` vs `prod`.
-- Làm rõ trạng thái mock data: xác định `USE_MOCK` nên bị xoá hoặc có flag env, để developer không bị nhầm.
+- **Database & mapping**
+  - JPA entity `RoomJpaEntity`/`RoomTypeJpaEntity`/`BookingJpaEntity` mong đợi bảng `rooms`, `room_types`, `bookings` với các cột `room_number`, `room_type_id`, `check_in`, `status`... Schema `.sql` lại dùng tên `tbl*` khác và không có bảng `room_types`. Đồng bộ giữa entity và schema hiện bị lệch.
+  - Tất cả số tiền trong schema đều kiểu `FLOAT`, không tương thích với `BigDecimal` trong domain và dễ gây sai lệch khi tính toán invoice.
 
-## 4. Tài liệu tham khảo nhanh
+## 3. PDR – rủi ro & điểm chưa hoàn thiện
+1. **Contract frontend/backend không đồng bộ**: Hooks booking/room gọi nhiều REST endpoint mà backend chưa hoặc không bao giờ cung cấp. Khi `USE_DEV_FALLBACK=false`, frontend sẽ ném lỗi vì thiếu API.
+2. **Authentication chưa thực sự có mặt ở backend**: `LoginPage` chạy mock, `authApi` không có endpoint `/auth/login`, backend không validate token/session nào. `ProtectedRoute` chỉ dựa vào session client-side. Cần định vị rõ scope auth (mock vs real) trong doc.
+3. **Cấu hình nhúng secrets**: `application.yaml` vẫn nằm trong repo với `username/password` rõ ràng. Byte script CI/production chưa hướng dẫn cách override bằng env.
+4. **Model DB lệch**: JPA dùng `rooms`, `room_types`, `bookings` trong khi `.sql` tạo `tblRoom`, `tblBooking`, `tblHotel`,... Phải chọn một contract (hoặc viết migration đồng bộ) để tránh lỗi khi khởi động (Spring boot modern JPA sẽ fail nếu không có bảng đúng tên).
+5. **Logic nghiệp vụ còn lỏng**: `CreateBookingService` không cập nhật `RoomStatus`, `RoomListPage` vẫn dựa vào dữ liệu giả, modal thêm phòng chỉ log ra console. Các mutation gọi API không tồn tại nên dao động.
+6. **Precision tài chính thấp**: ORM dùng `BigDecimal`, schema dùng `FLOAT`. Khi tính toán `price`/`discount` trên booking hoặc services, cần kiểm tra lại loại cột.
+
+## 4. Tài liệu tham chiếu nhanh
 | Nội dung | File tham chiếu |
 | --- | --- |
-| Backend entrypoint | `backend/src/main/java/com/hotel/backend/BackendApplication.java` |
-| View controllers | `backend/src/main/java/com/hotel/backend/adapter/in/web/*.java` |
-| Frontend routes/layout | `frontend/src/App.tsx`, `frontend/src/layouts/AdminLayout.tsx` |
-| Hooks gọi API | `frontend/src/features/rooms/hooks/useRooms.ts`, `frontend/src/features/bookings/hooks/useBookings.ts` |
-| Database schema | `database/hotel-management.sql` |
-| Dev proxy | `frontend/vite.config.ts` |
-| CI build Docker | `.github/workflows/build-backend.yaml` |
+| Backend entrypoint & beans | `backend/src/main/java/com/hotel/backend/BackendApplication.java`, `backend/config/BeanConfig.java` |
+| Chỉ có hai API hoạt động | `backend/adapter/in/web/RoomController.java`, `backend/adapter/in/web/BookingController.java` |
+| Domain/service | `backend/application/domain/service/CreateBookingService.java`, `RoomStatus`, `BookingStatus` |
+| Frontend routes/auth | `frontend/src/App.tsx`, `AdminLayout.tsx`, `features/auth/*` |
+| Hooks & mock data | `frontend/src/features/rooms/hooks/useRooms.ts`, `frontend/src/features/bookings/hooks/useBookings.ts`, `frontend/src/data/mockData.ts` |
+| API client và interceptor | `frontend/src/api/client.ts` |
+| Dev proxy & workflow | `frontend/vite.config.ts`, `.github/workflows/build-backend.yaml` |
+| Database script | `database/hotel-management.sql` |

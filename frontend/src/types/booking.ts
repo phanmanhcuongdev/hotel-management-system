@@ -3,12 +3,7 @@ export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
 export interface RoomShort {
   id: number
   roomNumber: string
-  type?: {
-    name: string
-  }
-  roomType?: {
-    name: string
-  }
+  typeName: string
 }
 
 export interface Booking {
@@ -18,6 +13,9 @@ export interface Booking {
   checkIn: string
   checkOut: string
   status: BookingStatus
+  guestName?: string
+  phoneNumber?: string
+  email?: string
 }
 
 export interface CreateBookingRequest {

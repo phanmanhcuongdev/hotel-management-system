@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { RoomStatusTabs, RoomGridView, RoomTable, RoomFormModal, ChangeStatusModal } from '../components'
 import { useRooms, useUpdateRoom } from '../hooks/useRooms'
-import { mockBookings } from '../../../data/mockData'
 import { Button } from '../../../components/ui'
 import type { Room, RoomStatus } from '../../../types'
 
@@ -47,13 +46,6 @@ export default function RoomListPage() {
     return result
   }, [rooms, statusFilter, searchValue])
 
-  const roomsWithBookings = useMemo(() => {
-    return filteredRooms.map((room) => ({
-      ...room,
-      currentBooking: room.status === 'OCCUPIED' ? mockBookings[room.id] : undefined,
-    }))
-  }, [filteredRooms])
-
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room)
     setStatusModalOpen(true)
@@ -75,20 +67,19 @@ export default function RoomListPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-black italic text-slate-900 tracking-tight uppercase">Sơ đồ phòng nghỉ</h1>
           <p className="mt-1 text-slate-500 font-medium">Theo dõi và vận hành trạng thái phòng thời gian thực.</p>
         </div>
         <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
-          <button 
+          <button
             onClick={() => setViewMode('grid')}
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'grid' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
           >
             <span className="material-symbols-outlined text-[20px]">grid_view</span>
           </button>
-          <button 
+          <button
             onClick={() => setViewMode('list')}
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'list' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
           >
@@ -97,9 +88,7 @@ export default function RoomListPage() {
         </div>
       </div>
 
-      {/* Main Dashboard Area */}
       <div className="space-y-6">
-        {/* Filter Toolbar */}
         <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center">
           <div className="flex-1 bg-white p-2 rounded-[2rem] border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
             <RoomStatusTabs
@@ -108,11 +97,11 @@ export default function RoomListPage() {
               onTabChange={(key) => setStatusFilter(key as StatusFilter)}
             />
           </div>
-          
+
           <div className="xl:w-80 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex items-center px-4 group focus-within:ring-2 focus-within:ring-primary-100 transition-all">
             <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Tìm số phòng..."
               className="w-full bg-transparent border-none outline-none px-3 py-2 text-sm font-bold text-slate-900 placeholder:text-slate-300"
               value={searchValue}
@@ -120,7 +109,7 @@ export default function RoomListPage() {
             />
           </div>
 
-          <Button 
+          <Button
             onClick={() => setFormModalOpen(true)}
             className="rounded-2xl bg-slate-900 py-6 px-6 shadow-xl shadow-slate-200"
           >
@@ -129,11 +118,10 @@ export default function RoomListPage() {
           </Button>
         </div>
 
-        {/* Room Display Area */}
         <div className="min-h-[400px]">
           {viewMode === 'grid' ? (
             <RoomGridView
-              rooms={roomsWithBookings}
+              rooms={filteredRooms}
               loading={isLoading}
               groupBy={activeFilter === 'floor' ? 'floor' : 'type'}
               onRoomClick={handleRoomClick}
@@ -154,7 +142,7 @@ export default function RoomListPage() {
       <RoomFormModal
         isOpen={isFormModalOpen}
         onClose={() => { setFormModalOpen(false); setSelectedRoom(null); }}
-        onSubmit={(data) => { console.log('Form submitted:', data); setFormModalOpen(false); setSelectedRoom(null); }}
+        onSubmit={(data) => { setFormModalOpen(false); setSelectedRoom(null); }}
         room={selectedRoom || undefined}
       />
 

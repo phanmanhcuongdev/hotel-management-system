@@ -1,7 +1,9 @@
 package com.hotel.backend.adapter.in.web;
 
+import com.hotel.backend.adapter.in.web.dto.CreateRoomRequest;
 import com.hotel.backend.adapter.in.web.dto.RoomResponse;
 import com.hotel.backend.adapter.in.web.dto.RoomTypeResponse;
+import com.hotel.backend.adapter.in.web.dto.UpdateRoomRequest;
 import com.hotel.backend.application.domain.model.Room;
 
 public final class RoomWebMapper {
