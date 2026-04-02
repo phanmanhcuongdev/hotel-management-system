@@ -8,4 +8,6 @@ import java.util.Optional;
 
 public interface GetRoomsUseCase {
     List<Room> getRooms(Optional<RoomStatus> status);
+
+    Room getRoomById(Long id);
 }

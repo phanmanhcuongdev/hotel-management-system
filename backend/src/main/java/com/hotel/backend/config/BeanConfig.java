@@ -4,6 +4,7 @@ import com.hotel.backend.adapter.out.persistence.BookingPersistenceAdapter;
 import com.hotel.backend.adapter.out.persistence.RoomPersistenceAdapter;
 import com.hotel.backend.adapter.out.persistence.SpringDataBookingRepository;
 import com.hotel.backend.adapter.out.persistence.SpringDataRoomRepository;
+import com.hotel.backend.adapter.out.persistence.SpringDataRoomTypeRepository;
 import com.hotel.backend.application.domain.service.CreateBookingService;
 import com.hotel.backend.application.domain.service.GetRoomsService;
 import com.hotel.backend.application.port.in.CreateBookingUseCase;
@@ -18,13 +19,13 @@ import org.springframework.context.annotation.Configuration;
 public class BeanConfig {
 
     @Bean
-    public LoadRoomsPort loadRoomsPort(SpringDataRoomRepository repo) {
-        return new RoomPersistenceAdapter(repo);
+    public LoadRoomsPort loadRoomsPort(SpringDataRoomRepository repo, SpringDataRoomTypeRepository typeRepo) {
+        return new RoomPersistenceAdapter(repo, typeRepo);
     }
 
     @Bean
-    public LoadRoomPort loadRoomPort(SpringDataRoomRepository repo) {
-        return new RoomPersistenceAdapter(repo);
+    public LoadRoomPort loadRoomPort(SpringDataRoomRepository repo, SpringDataRoomTypeRepository typeRepo) {
+        return new RoomPersistenceAdapter(repo, typeRepo);
     }
 
     @Bean
@@ -33,8 +34,8 @@ public class BeanConfig {
     }
 
     @Bean
-    public GetRoomsUseCase getRoomsUseCase(LoadRoomsPort loadRoomsPort) {
-        return new GetRoomsService(loadRoomsPort);
+    public GetRoomsUseCase getRoomsUseCase(LoadRoomsPort loadRoomsPort, LoadRoomPort loadRoomPort) {
+        return new GetRoomsService(loadRoomsPort, loadRoomPort);
     }
 
     @Bean

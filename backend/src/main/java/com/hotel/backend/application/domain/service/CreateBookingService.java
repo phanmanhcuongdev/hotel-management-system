@@ -8,6 +8,7 @@ import com.hotel.backend.application.port.in.CreateBookingCommand;
 import com.hotel.backend.application.port.in.CreateBookingUseCase;
 import com.hotel.backend.application.port.out.LoadRoomPort;
 import com.hotel.backend.application.port.out.SaveBookingPort;
+import java.util.Optional;
 
 public class CreateBookingService implements CreateBookingUseCase {
 
@@ -25,10 +26,9 @@ public class CreateBookingService implements CreateBookingUseCase {
             throw new IllegalArgumentException("checkIn must be before checkOut");
         }
 
-        Room room = loadRoomPort.loadRoomById(cmd.roomId())
-                .orElseThrow(() -> new IllegalStateException("Room not found"));
+        Optional<Room> room = loadRoomPort.loadRoomById(cmd.roomId());
 
-        if (room.status() != RoomStatus.AVAILABLE) {
+        if (room.isEmpty() || room.get().status() != RoomStatus.AVAILABLE) {
             throw new IllegalStateException("Room is not available");
         }
 

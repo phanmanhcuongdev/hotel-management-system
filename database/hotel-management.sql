@@ -1,96 +1,93 @@
-CREATE DATABASE hotel_management
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+create database if not exists hotel_management
+  character set utf8mb4
+  collate utf8mb4_unicode_ci;
 
-USE hotel_management;
+use hotel_management;
 
-CREATE TABLE tblHotel (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    starLevel INT NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    description VARCHAR(500)
+create table room_types (
+    id bigint auto_increment primary key,
+    name varchar(255) not null,
+    price decimal(19, 2) not null,
+    capacity int
 );
 
-CREATE TABLE tblUser (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    fullName VARCHAR(255) NOT NULL,
-    position VARCHAR(255) NOT NULL,
-    mail VARCHAR(255),
-    description VARCHAR(255)
+create table rooms (
+    id bigint auto_increment primary key,
+    room_number varchar(255) not null,
+    status varchar(255) not null,
+    room_type_id bigint not null,
+    foreign key (room_type_id) references room_types(id)
 );
 
-CREATE TABLE tblClient (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    idCardNumber INT NOT NULL,
-    fullName VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(15),
-    description VARCHAR(255)
+create table users (
+    id bigint auto_increment primary key,
+    username varchar(255) not null,
+    password varchar(255) not null,
+    full_name varchar(255) not null,
+    position varchar(255) not null,
+    mail varchar(255),
+    description varchar(255)
 );
 
-CREATE TABLE tblService (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    unit VARCHAR(255) NOT NULL,
-    price FLOAT NOT NULL
+create table clients (
+    id bigint auto_increment primary key,
+    id_card_number varchar(255) not null,
+    full_name varchar(255) not null,
+    address varchar(255) not null,
+    email varchar(255),
+    phone varchar(15),
+    description varchar(255)
 );
 
-CREATE TABLE tblRoom (
-    ID VARCHAR(255) PRIMARY KEY,
-    type VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    price FLOAT NOT NULL,
-    description VARCHAR(500),
-    hotelID INT NOT NULL,
-    FOREIGN KEY (hotelID) REFERENCES tblHotel(ID)
+create table bookings (
+    id bigint auto_increment primary key,
+    booking_date date not null,
+    discount float not null,
+    note varchar(500),
+    client_id bigint not null,
+    user_id bigint not null,
+    foreign key (client_id) references clients(id),
+    foreign key (user_id) references users(id)
 );
 
-CREATE TABLE tblBooking (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    bookingDate DATE NOT NULL,
-    discount FLOAT NOT NULL,
-    note VARCHAR(500),
-    clientID INT NOT NULL,
-    userID INT NOT NULL,
-    FOREIGN KEY (clientID) REFERENCES tblClient(ID),
-    FOREIGN KEY (userID) REFERENCES tblUser(ID)
+create table booked_rooms (
+    id bigint auto_increment primary key,
+    checkin date not null,
+    checkout date not null,
+    discount float not null,
+    is_checked_in int not null,
+    note varchar(500),
+    booking_id bigint not null,
+    room_id bigint not null,
+    foreign key (booking_id) references bookings(id),
+    foreign key (room_id) references rooms(id)
 );
 
-CREATE TABLE tblBookedRoom (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    checkin DATE NOT NULL,
-    checkout DATE NOT NULL,
-    discount FLOAT NOT NULL,
-    isCheckedIn INT NOT NULL,
-    note VARCHAR(500),
-    bookingID INT NOT NULL,
-    roomID VARCHAR(255) NOT NULL,
-    FOREIGN KEY (bookingID) REFERENCES tblBooking(ID),
-    FOREIGN KEY (roomID) REFERENCES tblRoom(ID)
+create table services (
+    id bigint auto_increment primary key,
+    name varchar(255) not null,
+    unit varchar(255) not null,
+    price float not null
 );
 
-CREATE TABLE tblUsedService (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    quantity INT NOT NULL,
-    discount FLOAT NOT NULL,
-    serviceID INT NOT NULL,
-    bookedRoomID INT NOT NULL,
-    FOREIGN KEY (serviceID) REFERENCES tblService(ID),
-    FOREIGN KEY (bookedRoomID) REFERENCES tblBookedRoom(ID)
+create table used_services (
+    id bigint auto_increment primary key,
+    quantity int not null,
+    discount float not null,
+    service_id bigint not null,
+    booked_room_id bigint not null,
+    foreign key (service_id) references services(id),
+    foreign key (booked_room_id) references booked_rooms(id)
 );
 
-CREATE TABLE tblBill (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    paymentDate DATE NOT NULL,
-    paymentAmount FLOAT NOT NULL,
-    paymentType INT NOT NULL,
-    note VARCHAR(500),
-    bookingID INT NOT NULL,
-    userID INT NOT NULL,
-    FOREIGN KEY (bookingID) REFERENCES tblBooking(ID),
-    FOREIGN KEY (userID) REFERENCES tblUser(ID)
+create table bills (
+    id bigint auto_increment primary key,
+    payment_date date not null,
+    payment_amount float not null,
+    payment_type int not null,
+    note varchar(500),
+    booking_id bigint not null,
+    user_id bigint not null,
+    foreign key (booking_id) references bookings(id),
+    foreign key (user_id) references users(id)
 );

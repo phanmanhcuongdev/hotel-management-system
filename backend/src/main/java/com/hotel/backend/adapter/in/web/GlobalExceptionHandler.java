@@ -21,4 +21,20 @@ public class GlobalExceptionHandler {
         // dùng cho: Room not found / Room not available (demo đơn giản)
         return new ApiErrorResponse("CONFLICT", ex.getMessage());
     }
+
+    @ExceptionHandler(com.hotel.backend.application.domain.exception.ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse notFound(com.hotel.backend.application.domain.exception.ResourceNotFoundException ex) {
+        return new ApiErrorResponse("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse validationError(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        String errorMsg = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .reduce((m1, m2) -> m1 + "; " + m2)
+                .orElse("Validation failed");
+        return new ApiErrorResponse("VALIDATION_ERROR", errorMsg);
+    }
 }

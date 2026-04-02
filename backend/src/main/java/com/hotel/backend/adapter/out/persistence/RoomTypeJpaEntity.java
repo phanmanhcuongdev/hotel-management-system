@@ -11,8 +11,10 @@ public class RoomTypeJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
+    @Column(nullable = false)
     public String name;
 
+    @Column(nullable = false)
     public BigDecimal price;
 
     public Integer capacity;

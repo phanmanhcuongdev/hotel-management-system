@@ -5,4 +5,6 @@ public record Room(
         String roomNumber,
         RoomStatus status,
         RoomType type
-) {}
+) {
+}
+

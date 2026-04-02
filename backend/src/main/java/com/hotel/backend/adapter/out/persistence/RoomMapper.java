@@ -12,12 +12,28 @@ public final class RoomMapper {
                 e.id,
                 e.roomNumber,
                 RoomStatus.valueOf(e.status),
-                new RoomType(
-                        e.roomType.id,
-                        e.roomType.name,
-                        e.roomType.price,
-                        e.roomType.capacity
-                )
+                toDomain(e.roomType)
         );
+    }
+
+    public static RoomType toDomain(RoomTypeJpaEntity e) {
+        if (e == null) return null;
+        return new RoomType(e.id, e.name, e.price, e.capacity);
+    }
+
+    public static RoomJpaEntity toEntity(Room domain) {
+        RoomJpaEntity entity = new RoomJpaEntity();
+        entity.id = domain.id();
+        entity.roomNumber = domain.roomNumber();
+        entity.status = domain.status().name();
+
+        RoomTypeJpaEntity typeEntity = new RoomTypeJpaEntity();
+        typeEntity.id = domain.type().id();
+        typeEntity.name = domain.type().name();
+        typeEntity.price = domain.type().price();
+        typeEntity.capacity = domain.type().capacity();
+        entity.roomType = typeEntity;
+
+        return entity;
     }
 }

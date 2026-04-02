@@ -7,4 +7,5 @@ public record RoomType(
         String name,
         BigDecimal price,
         Integer capacity
-) {}
+)
+{}
