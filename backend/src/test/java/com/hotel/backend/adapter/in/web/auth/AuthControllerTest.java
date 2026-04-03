@@ -8,12 +8,11 @@ import com.hotel.backend.application.domain.exception.InvalidCredentialsExceptio
 import com.hotel.backend.application.port.in.auth.LoadAuthenticatedUserUseCase;
 import com.hotel.backend.application.port.in.auth.LoginResult;
 import com.hotel.backend.application.port.in.auth.LoginUseCase;
+import com.hotel.backend.config.ObjectMapperConfig;
 import com.hotel.backend.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest({AuthController.class, GlobalExceptionHandler.class, JwtAuthenticationFilter.class, SecurityConfig.class})
-@Import({GlobalExceptionHandler.class, AuthControllerTest.TestConfig.class})
+@Import({GlobalExceptionHandler.class, ObjectMapperConfig.class})
 class AuthControllerTest {
 
     @Autowired
@@ -124,13 +123,5 @@ class AuthControllerTest {
     }
 
     private record TestLoginRequest(String username, String password) {
-    }
-
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        ObjectMapper objectMapper() {
-            return new ObjectMapper();
-        }
     }
 }
