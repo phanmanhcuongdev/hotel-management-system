@@ -1,5 +1,6 @@
 package com.hotel.backend.application.domain.service;
 
+import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
 import com.hotel.backend.application.domain.model.User;
 import com.hotel.backend.application.port.in.auth.LoginCommand;
 import com.hotel.backend.application.port.in.auth.LoginResult;
@@ -21,7 +22,7 @@ public class LoginService implements LoginUseCase {
     @Override
     public LoginResult login(LoginCommand command) {
         User user = loadUserByUsernamePort.loadByUsername(command.username())
-                .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
         boolean isValidPassword = passwordEncoderPort.matches(
                 command.password(),
@@ -29,7 +30,7 @@ public class LoginService implements LoginUseCase {
         );
 
         if (!isValidPassword) {
-            throw new RuntimeException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         String token = tokenGeneratorPort.generateToken(user);
