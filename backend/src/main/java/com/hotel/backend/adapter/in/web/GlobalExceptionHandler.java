@@ -1,24 +1,53 @@
 package com.hotel.backend.adapter.in.web;
 
 import com.hotel.backend.adapter.in.web.dto.ApiErrorResponse;
+import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErrorResponse badRequest(IllegalArgumentException ex) {
-        return new ApiErrorResponse("BAD_REQUEST", ex.getMessage());
+    @ExceptionHandler(InvalidCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleInvalidCredentials(InvalidCredentialsException ex) {
+        return new ApiErrorResponse("INVALID_CREDENTIALS", ex.getMessage());
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiErrorResponse conflict(IllegalStateException ex) {
-        // dùng cho: Room not found / Room not available (demo đơn giản)
-        return new ApiErrorResponse("CONFLICT", ex.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleValidation(MethodArgumentNotValidException ex) {
+        List<ApiErrorResponse.FieldValidationError> details = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> new ApiErrorResponse.FieldValidationError(error.getField(), error.getDefaultMessage()))
+                .toList();
+
+        return new ApiErrorResponse("VALIDATION_ERROR", "Request validation failed", details);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleMalformedJson(HttpMessageNotReadableException ex) {
+        return new ApiErrorResponse("MALFORMED_JSON", "Request body is missing or malformed");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleAccessDenied(AccessDeniedException ex) {
+        return new ApiErrorResponse("FORBIDDEN", "Access is denied");
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiErrorResponse handleUnexpected(Exception ex) {
+        return new ApiErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred");
     }
 }

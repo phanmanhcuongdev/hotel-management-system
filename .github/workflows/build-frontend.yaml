@@ -1,22 +1,22 @@
-name: Build and Push Backend Image
+name: Build and Push Frontend Image
 
 on:
   pull_request:
     branches:
       - 'release/**'
     paths:
-      - 'backend/**'
-      - '.github/workflows/build-backend.yaml'
+      - 'frontend/**'
+      - '.github/workflows/build-frontend.yaml'
   push:
     branches:
       - 'release/**'
     paths:
-      - 'backend/**'
-      - '.github/workflows/build-backend.yaml'
+      - 'frontend/**'
+      - '.github/workflows/build-frontend.yaml'
   workflow_dispatch:
 
 jobs:
-  build-backend:
+  build-frontend:
     runs-on: ubuntu-latest
 
     permissions:
@@ -24,10 +24,10 @@ jobs:
       packages: write
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hotel-backend
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/hotel-frontend
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Prepare tags
@@ -43,14 +43,14 @@ jobs:
         if: github.event_name == 'push'
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: Build backend image
+      - name: Build frontend image
         run: |
           docker build \
             -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }} \
             -t $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}-${{ steps.prep.outputs.sha_tag }} \
-            ./backend
+            ./frontend
 
-      - name: Push backend image
+      - name: Push frontend image
         if: github.event_name == 'push'
         run: |
           docker push $IMAGE_NAME:${{ steps.prep.outputs.date_tag }}
