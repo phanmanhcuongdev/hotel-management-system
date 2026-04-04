@@ -9,6 +9,8 @@ import com.hotel.backend.application.port.in.CreateBookingUseCase;
 import com.hotel.backend.application.port.out.LoadRoomPort;
 import com.hotel.backend.application.port.out.SaveBookingPort;
 
+import java.time.LocalDateTime;
+
 public class CreateBookingService implements CreateBookingUseCase {
 
     private final LoadRoomPort loadRoomPort;
@@ -25,6 +27,14 @@ public class CreateBookingService implements CreateBookingUseCase {
             throw new IllegalArgumentException("checkIn must be before checkOut");
         }
 
+        if (cmd.guestName() == null || cmd.guestName().isBlank()) {
+            throw new IllegalArgumentException("guestName is required");
+        }
+
+        if (cmd.phoneNumber() == null || cmd.phoneNumber().isBlank()) {
+            throw new IllegalArgumentException("phoneNumber is required");
+        }
+
         Room room = loadRoomPort.loadRoomById(cmd.roomId())
                 .orElseThrow(() -> new IllegalStateException("Room not found"));
 
@@ -32,13 +42,18 @@ public class CreateBookingService implements CreateBookingUseCase {
             throw new IllegalStateException("Room is not available");
         }
 
+        LocalDateTime now = LocalDateTime.now();
         Booking booking = new Booking(
                 null,
-                cmd.userId(),
+                cmd.guestName(),
+                cmd.phoneNumber(),
+                cmd.email(),
                 cmd.roomId(),
                 cmd.checkIn(),
                 cmd.checkOut(),
-                BookingStatus.PENDING
+                BookingStatus.PENDING,
+                now,
+                now
         );
 
         return saveBookingPort.save(booking);
