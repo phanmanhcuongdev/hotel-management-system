@@ -3,6 +3,9 @@ spring:
     name:
       backend
 
+  profiles:
+    active: dev
+
   datasource:
     url: jdbc:mysql://192.168.20.40:3306/hotel_management
     username: cuongdso

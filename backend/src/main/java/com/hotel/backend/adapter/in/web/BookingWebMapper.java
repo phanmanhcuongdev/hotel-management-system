@@ -9,13 +9,21 @@ public final class BookingWebMapper {
     private BookingWebMapper() {}
 
     public static BookingResponse toResponse(Booking booking, Room room) {
+        RoomShortResponse.RoomTypeShortResponse typeResp = room.type() != null
+                ? new RoomShortResponse.RoomTypeShortResponse(room.type().id(), room.type().name())
+                : null;
+
         return new BookingResponse(
                 booking.id(),
-                booking.userId(),
-                new RoomShortResponse(room.id(), room.roomNumber()),
+                booking.guestName(),
+                booking.phoneNumber(),
+                booking.email(),
+                new RoomShortResponse(room.id(), room.roomNumber(), typeResp),
                 booking.checkIn(),
                 booking.checkOut(),
-                booking.status().name()
+                booking.status().name(),
+                booking.createdAt(),
+                booking.updatedAt()
         );
     }
 }
