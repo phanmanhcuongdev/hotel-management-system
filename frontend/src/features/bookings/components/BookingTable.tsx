@@ -30,12 +30,12 @@ export function BookingTable({ bookings, loading, onViewDetails, onUpdateStatus,
     {
       key: 'room',
       header: 'Room',
-      render: (booking: Booking) => booking.room.roomNumber,
+      render: (booking: Booking) => booking.room?.roomNumber ?? '—',
     },
     {
-      key: 'userId',
-      header: 'User ID',
-      render: (booking: Booking) => `#${booking.userId}`,
+      key: 'guestName',
+      header: 'Guest',
+      render: (booking: Booking) => booking.guestName,
     },
     {
       key: 'checkIn',

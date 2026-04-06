@@ -109,7 +109,7 @@ export default function DashboardPage() {
                 {todayCheckIns.map((booking) => (
                   <li key={booking.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div>
-                      <span className="font-medium">Room {booking.room.roomNumber}</span>
+                      <span className="font-medium">Room {booking.room?.roomNumber ?? '—'}</span>
                       <span className="text-gray-500 text-sm ml-2">Booking #{booking.id}</span>
                     </div>
                     <BookingStatusBadge status={booking.status} />
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 {todayCheckOuts.map((booking) => (
                   <li key={booking.id} className="flex items-center justify-between py-2 border-b last:border-0">
                     <div>
-                      <span className="font-medium">Room {booking.room.roomNumber}</span>
+                      <span className="font-medium">Room {booking.room?.roomNumber ?? '—'}</span>
                       <span className="text-gray-500 text-sm ml-2">Booking #{booking.id}</span>
                     </div>
                     <BookingStatusBadge status={booking.status} />
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                   <div>
                     <span className="font-medium">Booking #{booking.id}</span>
                     <span className="text-gray-500 text-sm ml-2">
-                      Room {booking.room.roomNumber} | {booking.checkIn} - {booking.checkOut}
+                      Room {booking.room?.roomNumber ?? '—'} | {booking.checkIn} - {booking.checkOut}
                     </span>
                   </div>
                   <BookingStatusBadge status={booking.status} />

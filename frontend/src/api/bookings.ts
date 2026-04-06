@@ -18,12 +18,12 @@ export const bookingsApi = {
   },
 
   update: async (id: number, data: UpdateBookingRequest): Promise<Booking> => {
-    const response = await apiClient.put<Booking>(`/bookings/${id}`, data)
+    const response = await apiClient.patch<Booking>(`/bookings/${id}/status`, data)
     return response.data
   },
 
   cancel: async (id: number): Promise<Booking> => {
-    const response = await apiClient.put<Booking>(`/bookings/${id}`, { status: 'CANCELLED' })
+    const response = await apiClient.patch<Booking>(`/bookings/${id}/status`, { status: 'CANCELLED' })
     return response.data
   },
 }

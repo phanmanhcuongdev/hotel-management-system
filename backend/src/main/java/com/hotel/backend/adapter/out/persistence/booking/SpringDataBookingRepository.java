@@ -1,0 +1,9 @@
+package com.hotel.backend.adapter.out.persistence.booking;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface SpringDataBookingRepository extends JpaRepository<BookingJpaEntity, Long> {
+    List<BookingJpaEntity> findByStatus(String status);
+}
