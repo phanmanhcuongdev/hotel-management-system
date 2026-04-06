@@ -38,7 +38,7 @@ export default function BookingListPage() {
     }
   }
 
-  const handleCreateSubmit = (data: { userId: number; roomId: number; checkIn: string; checkOut: string }) => {
+  const handleCreateSubmit = (data: { guestName: string; phoneNumber: string; email?: string; roomId: number; checkIn: string; checkOut: string }) => {
     createBooking.mutate(data, {
       onSuccess: () => {
         setCreateModalOpen(false)

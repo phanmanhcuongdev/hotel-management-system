@@ -3,9 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Modal, Input, Select, Button } from '../../../components/ui'
 import type { Room } from '../../../types'
+import type { CreateBookingRequest } from '../../../types'
 
 const bookingSchema = z.object({
-  userId: z.string().min(1, 'User ID is required'),
+  guestName: z.string().min(1, 'Guest name is required'),
+  phoneNumber: z.string().min(1, 'Phone number is required'),
+  email: z.string().email('Invalid email').optional().or(z.literal('')),
   roomId: z.string().min(1, 'Room is required'),
   checkIn: z.string().min(1, 'Check-in date is required'),
   checkOut: z.string().min(1, 'Check-out date is required'),
@@ -23,7 +26,7 @@ type BookingFormData = z.infer<typeof bookingSchema>
 interface CreateBookingModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: { userId: number; roomId: number; checkIn: string; checkOut: string }) => void
+  onSubmit: (data: CreateBookingRequest) => void
   availableRooms: Room[]
   loading?: boolean
 }
@@ -37,7 +40,9 @@ export function CreateBookingModal({ isOpen, onClose, onSubmit, availableRooms, 
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      userId: '',
+      guestName: '',
+      phoneNumber: '',
+      email: '',
       roomId: '',
       checkIn: '',
       checkOut: '',
@@ -51,7 +56,9 @@ export function CreateBookingModal({ isOpen, onClose, onSubmit, availableRooms, 
 
   const handleFormSubmit = (data: BookingFormData) => {
     onSubmit({
-      userId: parseInt(data.userId),
+      guestName: data.guestName,
+      phoneNumber: data.phoneNumber,
+      email: data.email || undefined,
       roomId: parseInt(data.roomId),
       checkIn: data.checkIn,
       checkOut: data.checkOut,
@@ -70,12 +77,30 @@ export function CreateBookingModal({ isOpen, onClose, onSubmit, availableRooms, 
     <Modal isOpen={isOpen} onClose={handleClose} title="Create New Booking">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
         <Input
-          id="userId"
-          label="User ID"
-          type="number"
-          placeholder="Enter user ID"
-          error={errors.userId?.message}
-          {...register('userId')}
+          id="guestName"
+          label="Guest Name"
+          type="text"
+          placeholder="Enter guest name"
+          error={errors.guestName?.message}
+          {...register('guestName')}
+        />
+
+        <Input
+          id="phoneNumber"
+          label="Phone Number"
+          type="text"
+          placeholder="Enter phone number"
+          error={errors.phoneNumber?.message}
+          {...register('phoneNumber')}
+        />
+
+        <Input
+          id="email"
+          label="Email (optional)"
+          type="email"
+          placeholder="Enter email address"
+          error={errors.email?.message}
+          {...register('email')}
         />
 
         <Select
