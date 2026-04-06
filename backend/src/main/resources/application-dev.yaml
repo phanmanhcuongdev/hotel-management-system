@@ -16,3 +16,7 @@ spring:
     show-sql: true
     open-in-view: false
     database-platform: org.hibernate.dialect.H2Dialect
+
+jwt:
+  secret: dev-secret-key-for-local-testing-only-32chars
+  expiration-ms: 86400000
