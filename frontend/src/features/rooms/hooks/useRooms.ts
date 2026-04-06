@@ -2,24 +2,37 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { mockRooms } from '../../../data/mockData'
 import type { RoomStatus, Room, UpdateRoomRequest } from '../../../types'
 
-// Use mock data for demo - replace with API calls in production
 const USE_MOCK = false
+const USE_DEV_FALLBACK = import.meta.env.DEV && import.meta.env.VITE_ENABLE_API_FALLBACK !== 'false'
+
+async function fetchRoomsSafely(status?: RoomStatus): Promise<Room[]> {
+  const response = await fetch(`/api/rooms${status ? `?status=${status}` : ''}`)
+
+  if (response.status === 401 || response.status === 403) {
+    if (!USE_DEV_FALLBACK) throw new Error('Unauthorized: cannot load rooms.')
+    console.warn('Rooms API unavailable, using mock rooms for frontend flow.')
+    return status ? mockRooms.filter((r) => r.status === status) : mockRooms
+  }
+
+  const data = await response.json()
+  if (!Array.isArray(data)) {
+    if (!USE_DEV_FALLBACK) throw new Error('Unexpected rooms response.')
+    console.warn('Rooms API returned non-array, using mock rooms.')
+    return status ? mockRooms.filter((r) => r.status === status) : mockRooms
+  }
+
+  return data as Room[]
+}
 
 export function useRooms(status?: RoomStatus) {
   return useQuery({
     queryKey: ['rooms', status],
     queryFn: async (): Promise<Room[]> => {
       if (USE_MOCK) {
-        // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 300))
-        if (status) {
-          return mockRooms.filter((room) => room.status === status)
-        }
-        return mockRooms
+        return status ? mockRooms.filter((room) => room.status === status) : mockRooms
       }
-      // Real API call would go here
-      const response = await fetch(`/api/rooms${status ? `?status=${status}` : ''}`)
-      return response.json()
+      return fetchRoomsSafely(status)
     },
   })
 }
@@ -33,6 +46,7 @@ export function useRoom(id: number) {
         return mockRooms.find((room) => room.id === id)
       }
       const response = await fetch(`/api/rooms/${id}`)
+      if (!response.ok) return mockRooms.find((r) => r.id === id)
       return response.json()
     },
     enabled: !!id,
