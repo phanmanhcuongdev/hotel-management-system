@@ -2,56 +2,26 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { mockRooms } from '../../../data/mockData'
 import type { RoomStatus, Room, UpdateRoomRequest } from '../../../types'
 
-// Use mock data for demo - replace with API calls in production
 const USE_MOCK = false
 const USE_DEV_FALLBACK = import.meta.env.DEV && import.meta.env.VITE_ENABLE_API_FALLBACK !== 'false'
 
-async function readJsonSafely(response: Response) {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (!contentType.includes('json')) {
-    return null
-  }
-
-  try {
-    return await response.json()
-  } catch {
-    return null
-  }
-}
-
-function getMockRooms(status?: RoomStatus) {
-  if (status) {
-    return mockRooms.filter((room) => room.status === status)
-  }
-
-  return mockRooms
-}
-
-async function loadRoomsFromApi(status?: RoomStatus) {
+async function fetchRoomsSafely(status?: RoomStatus): Promise<Room[]> {
   const response = await fetch(`/api/rooms${status ? `?status=${status}` : ''}`)
-  const payload = await readJsonSafely(response)
 
-  if (!response.ok || !Array.isArray(payload)) {
-    if (!USE_DEV_FALLBACK) {
-      throw new Error('Khong tai duoc danh sach rooms tu API.')
-    }
-
+  if (response.status === 401 || response.status === 403) {
+    if (!USE_DEV_FALLBACK) throw new Error('Unauthorized: cannot load rooms.')
     console.warn('Rooms API unavailable, using mock rooms for frontend flow.')
-    return getMockRooms(status)
+    return status ? mockRooms.filter((r) => r.status === status) : mockRooms
   }
 
-  return payload.filter(isRoomLike) as Room[]
-}
-
-function isRoomLike(value: unknown): value is Room {
-  if (!value || typeof value !== 'object') {
-    return false
+  const data = await response.json()
+  if (!Array.isArray(data)) {
+    if (!USE_DEV_FALLBACK) throw new Error('Unexpected rooms response.')
+    console.warn('Rooms API returned non-array, using mock rooms.')
+    return status ? mockRooms.filter((r) => r.status === status) : mockRooms
   }
 
-  const room = value as Partial<Room>
-
-  return typeof room.id === 'number' && typeof room.roomNumber === 'string' && typeof room.status === 'string'
+  return data as Room[]
 }
 
 export function useRooms(status?: RoomStatus) {
@@ -59,12 +29,10 @@ export function useRooms(status?: RoomStatus) {
     queryKey: ['rooms', status],
     queryFn: async (): Promise<Room[]> => {
       if (USE_MOCK) {
-        // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 300))
-        return getMockRooms(status)
+        return status ? mockRooms.filter((room) => room.status === status) : mockRooms
       }
-
-      return loadRoomsFromApi(status)
+      return fetchRoomsSafely(status)
     },
   })
 }
@@ -77,19 +45,9 @@ export function useRoom(id: number) {
         await new Promise((resolve) => setTimeout(resolve, 200))
         return mockRooms.find((room) => room.id === id)
       }
-
       const response = await fetch(`/api/rooms/${id}`)
-      const payload = await readJsonSafely(response)
-
-      if (!response.ok || !payload || Array.isArray(payload)) {
-        if (!USE_DEV_FALLBACK) {
-          throw new Error(`Khong tai duoc room #${id} tu API.`)
-        }
-
-        return mockRooms.find((room) => room.id === id)
-      }
-
-      return payload as Room
+      if (!response.ok) return mockRooms.find((r) => r.id === id)
+      return response.json()
     },
     enabled: !!id,
   })

@@ -39,7 +39,7 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
           </div>
           <div>
             <p className="text-sm text-gray-500">Room</p>
-            <p className="mt-1 font-medium">{booking.room?.roomNumber ?? '---'}</p>
+            <p className="mt-1 font-medium">{booking.room?.roomNumber ?? '—'}</p>
           </div>
         </div>
 
@@ -60,8 +60,8 @@ export function BookingDetailModal({ isOpen, onClose, booking }: BookingDetailMo
             <p className="mt-1 font-medium">{calculateNights()} night(s)</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">User ID</p>
-            <p className="mt-1 font-medium">#{booking.userId}</p>
+            <p className="text-sm text-gray-500">Guest</p>
+            <p className="mt-1 font-medium">{booking.guestName}</p>
           </div>
         </div>
 

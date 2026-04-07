@@ -1,12 +1,17 @@
 package com.hotel.backend.adapter.in.web.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record BookingResponse(
         Long id,
-        Long userId,
+        String guestName,
+        String phoneNumber,
+        String email,
         RoomShortResponse room,
         LocalDate checkIn,
         LocalDate checkOut,
-        String status
+        String status,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt
 ) {}

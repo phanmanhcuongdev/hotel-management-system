@@ -43,7 +43,13 @@ function isBookingLike(value: unknown): value is Booking {
 
   const booking = value as Partial<Booking>
 
-  return typeof booking.id === 'number' && typeof booking.checkIn === 'string' && typeof booking.checkOut === 'string' && typeof booking.status === 'string'
+  return (
+    typeof booking.id === 'number' &&
+    typeof booking.guestName === 'string' &&
+    typeof booking.checkIn === 'string' &&
+    typeof booking.checkOut === 'string' &&
+    typeof booking.status === 'string'
+  )
 }
 
 export function useBookings() {
@@ -121,8 +127,8 @@ export function useUpdateBooking() {
         const booking = mockBookingsList.find((b) => b.id === id)
         return { ...booking, ...data }
       }
-      const response = await fetch(`/api/bookings/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`/api/bookings/${id}/status`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
@@ -146,8 +152,8 @@ export function useCancelBooking() {
         const booking = mockBookingsList.find((b) => b.id === id)
         return { ...booking, status: 'CANCELLED' }
       }
-      const response = await fetch(`/api/bookings/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`/api/bookings/${id}/status`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'CANCELLED' }),
       })
