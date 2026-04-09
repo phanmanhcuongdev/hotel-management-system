@@ -1,7 +1,7 @@
 package com.hotel.backend.config;
 
-import com.hotel.backend.adapter.out.persistence.room.RoomJpaEntity;
-import com.hotel.backend.adapter.out.persistence.room.RoomTypeJpaEntity;
+import com.hotel.backend.adapter.out.persistence.room.RoomEntity;
+import com.hotel.backend.adapter.out.persistence.room.RoomTypeEntity;
 import com.hotel.backend.adapter.out.persistence.room.SpringDataRoomRepository;
 import com.hotel.backend.adapter.out.persistence.user.UserEntity;
 import com.hotel.backend.adapter.out.persistence.user.UserRepository;
@@ -84,19 +84,19 @@ public class DevDataSeeder implements CommandLineRunner {
             return;
         }
 
-        RoomTypeJpaEntity standard = new RoomTypeJpaEntity();
+        RoomTypeEntity standard = new RoomTypeEntity();
         standard.name = "Standard";
         standard.price = new BigDecimal("100.00");
         standard.capacity = 2;
         entityManager.persist(standard);
 
-        RoomTypeJpaEntity deluxe = new RoomTypeJpaEntity();
+        RoomTypeEntity deluxe = new RoomTypeEntity();
         deluxe.name = "Deluxe";
         deluxe.price = new BigDecimal("150.00");
         deluxe.capacity = 2;
         entityManager.persist(deluxe);
 
-        RoomTypeJpaEntity suite = new RoomTypeJpaEntity();
+        RoomTypeEntity suite = new RoomTypeEntity();
         suite.name = "Suite";
         suite.price = new BigDecimal("250.00");
         suite.capacity = 4;
@@ -126,10 +126,10 @@ public class DevDataSeeder implements CommandLineRunner {
         );
 
         for (Object[] rawRoom : rooms) {
-            RoomJpaEntity room = new RoomJpaEntity();
+            RoomEntity room = new RoomEntity();
             room.roomNumber = (String) rawRoom[0];
             room.status = (String) rawRoom[1];
-            room.roomType = (RoomTypeJpaEntity) rawRoom[2];
+            room.roomType = (RoomTypeEntity) rawRoom[2];
             entityManager.persist(room);
         }
 

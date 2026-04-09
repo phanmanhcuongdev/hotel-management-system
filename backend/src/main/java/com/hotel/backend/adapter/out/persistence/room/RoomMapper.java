@@ -7,7 +7,7 @@ import com.hotel.backend.application.domain.model.RoomType;
 public final class RoomMapper {
     private RoomMapper() {}
 
-    public static Room toDomain(RoomJpaEntity entity) {
+    public static Room toDomain(RoomEntity entity) {
         return new Room(
                 entity.id,
                 entity.roomNumber,
@@ -16,7 +16,7 @@ public final class RoomMapper {
         );
     }
 
-    public static RoomType toDomain(RoomTypeJpaEntity entity) {
+    public static RoomType toDomain(RoomTypeEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -24,14 +24,14 @@ public final class RoomMapper {
         return new RoomType(entity.id, entity.name, entity.price, entity.capacity);
     }
 
-    public static RoomJpaEntity toEntity(Room room) {
-        RoomJpaEntity entity = new RoomJpaEntity();
+    public static RoomEntity toEntity(Room room) {
+        RoomEntity entity = new RoomEntity();
         entity.id = room.id();
         entity.roomNumber = room.roomNumber();
         entity.status = room.status().name();
 
         if (room.type() != null) {
-            RoomTypeJpaEntity roomTypeEntity = new RoomTypeJpaEntity();
+            RoomTypeEntity roomTypeEntity = new RoomTypeEntity();
             roomTypeEntity.id = room.type().id();
             entity.roomType = roomTypeEntity;
         }

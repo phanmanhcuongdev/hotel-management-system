@@ -18,13 +18,15 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
     @Column(nullable = false)
     private String position;
 
+    @Column(name = "mail")
     private String mail;
 
+    @Column(length = 255)
     private String description;
 }
