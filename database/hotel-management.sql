@@ -2,8 +2,15 @@ CREATE DATABASE IF NOT EXISTS hotel_management
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE hotel_management;
+use hotel_management;
 
+DROP TABLE IF EXISTS bills;
+DROP TABLE IF EXISTS used_services;
+DROP TABLE IF EXISTS services;
+DROP TABLE IF EXISTS booked_rooms;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS room_types;
 DROP TABLE IF EXISTS bill;
 DROP TABLE IF EXISTS used_service;
 DROP TABLE IF EXISTS booked_room;
@@ -112,4 +119,35 @@ CREATE TABLE bill (
         FOREIGN KEY (booking_id) REFERENCES booking(id),
     CONSTRAINT fk_bill_user
         FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+CREATE TABLE room_types (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(19, 2) NOT NULL,
+    capacity INT
+);
+
+CREATE TABLE rooms (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    room_number VARCHAR(255) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    room_type_id BIGINT NOT NULL,
+    CONSTRAINT fk_rooms_room_type
+        FOREIGN KEY (room_type_id) REFERENCES room_types(id)
+);
+
+CREATE TABLE bookings (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    guest_name VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(50) NOT NULL,
+    email VARCHAR(255),
+    room_id BIGINT NOT NULL,
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT fk_bookings_room
+        FOREIGN KEY (room_id) REFERENCES rooms(id)
 );

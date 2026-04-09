@@ -1,6 +1,6 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { Button } from '../../components/ui'
@@ -17,7 +17,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
-  return <p className="mt-1 text-xs font-medium text-red-500 animate-in fade-in slide-in-from-top-1">{message}</p>
+  return <p className="mt-1 animate-in fade-in slide-in-from-top-1 text-xs font-medium text-red-500">{message}</p>
 }
 
 export default function LoginPage() {
@@ -58,7 +58,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen bg-white font-sans text-slate-900">
-      {/* Left side: Image & Branding (Hidden on mobile) */}
       <div className="relative hidden w-1/2 flex-col overflow-hidden bg-slate-900 lg:flex">
         <img
           src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2070"
@@ -66,13 +65,15 @@ export default function LoginPage() {
           className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-[10000ms] hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
-        
+
         <div className="relative z-10 flex flex-1 flex-col justify-between p-12">
           <div className="flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-500/30">
               <span className="material-symbols-outlined text-[24px]">apartment</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-white">Grand Hotel <span className="text-primary-400">Hub</span></span>
+            <span className="text-xl font-bold tracking-tight text-white">
+              Grand Hotel <span className="text-primary-400">Hub</span>
+            </span>
           </div>
 
           <div className="max-w-md">
@@ -86,11 +87,11 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-6">
             <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4].map((index) => (
                 <img
-                  key={i}
+                  key={index}
                   className="h-10 w-10 rounded-full border-2 border-slate-900 object-cover shadow-sm"
-                  src={`https://i.pravatar.cc/150?u=${i + 10}`}
+                  src={`https://i.pravatar.cc/150?u=${index + 10}`}
                   alt="Staff member"
                 />
               ))}
@@ -102,22 +103,20 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right side: Login Form */}
       <div className="flex w-full flex-col items-center justify-center p-8 lg:w-1/2 lg:p-12 xl:p-24">
         <div className="w-full max-w-sm">
-          {/* Mobile Branding */}
           <div className="mb-12 flex items-center gap-2.5 lg:hidden">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-500/30">
               <span className="material-symbols-outlined text-[24px]">apartment</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">Grand Hotel <span className="text-primary-600">Hub</span></span>
+            <span className="text-xl font-bold tracking-tight text-slate-900">
+              Grand Hotel <span className="text-primary-600">Hub</span>
+            </span>
           </div>
 
           <div className="mb-10">
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">Chào mừng trở lại</h2>
-            <p className="mt-3 text-slate-500">
-              Vui lòng nhập thông tin để truy cập vào hệ thống quản trị.
-            </p>
+            <p className="mt-3 text-slate-500">Vui lòng nhập thông tin để truy cập vào hệ thống quản trị.</p>
           </div>
 
           {submitError && (
@@ -130,7 +129,7 @@ export default function LoginPage() {
           <form className="space-y-6" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-semibold text-slate-700">
-                Email hoặc Tên đăng nhập
+                Email hoặc tên đăng nhập
               </label>
               <div className="group relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400 transition-colors group-focus-within:text-primary-600">
@@ -153,7 +152,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="text-sm font-semibold text-slate-700">
                   Mật khẩu
                 </label>
-                <button type="button" className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+                <button type="button" className="text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700">
                   Quên mật khẩu?
                 </button>
               </div>
@@ -172,11 +171,9 @@ export default function LoginPage() {
                 <button
                   type="button"
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-600"
-                  onClick={() => setShowPassword((v) => !v)}
+                  onClick={() => setShowPassword((value) => !value)}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </span>
+                  <span className="material-symbols-outlined text-[20px]">{showPassword ? 'visibility_off' : 'visibility'}</span>
                 </button>
               </div>
               <FieldError message={errors.password?.message} />
@@ -186,10 +183,10 @@ export default function LoginPage() {
               <input
                 id="remember"
                 type="checkbox"
-                className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-600 transition-colors cursor-pointer"
+                className="h-4 w-4 cursor-pointer rounded border-slate-300 text-primary-600 transition-colors focus:ring-primary-600"
                 {...register('remember')}
               />
-              <label htmlFor="remember" className="ml-3 cursor-pointer text-sm font-medium text-slate-600 select-none">
+              <label htmlFor="remember" className="ml-3 cursor-pointer select-none text-sm font-medium text-slate-600">
                 Ghi nhớ đăng nhập
               </label>
             </div>
@@ -203,7 +200,7 @@ export default function LoginPage() {
             </Button>
 
             {MOCK_AUTH_ENABLED && (
-              <div className="mt-8 rounded-2xl bg-slate-50 p-5 border border-slate-100">
+              <div className="mt-8 rounded-2xl border border-slate-100 bg-slate-50 p-5">
                 <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
                   <span className="material-symbols-outlined text-[16px]">info</span>
                   Demo Account
@@ -222,9 +219,7 @@ export default function LoginPage() {
             )}
           </form>
 
-          <p className="mt-12 text-center text-sm text-slate-500">
-            © 2024 Grand Hotel Hub. All rights reserved.
-          </p>
+          <p className="mt-12 text-center text-sm text-slate-500">© 2024 Grand Hotel Hub. All rights reserved.</p>
         </div>
       </div>
     </div>

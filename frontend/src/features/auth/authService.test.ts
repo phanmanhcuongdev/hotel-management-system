@@ -36,8 +36,8 @@ describe('authService', () => {
         username: 'wrong-user',
         password: 'bad-pass',
         remember: true,
-      }),
-    ).rejects.toThrow('Sai tai khoan demo')
+      })
+    ).rejects.toThrow('Sai tài khoản demo')
   })
 
   it('clears session on logout', async () => {

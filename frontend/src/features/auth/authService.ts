@@ -34,26 +34,20 @@ function buildMockSession(username: string): AuthSession {
   }
 }
 
-function normalizeApiSession(data: Awaited<ReturnType<typeof loginWithApi>>, username: string): AuthSession {
-  const token = data.token ?? data.accessToken
-
-  if (!token) {
-    throw new Error('Auth API khong tra ve token hop le.')
+function normalizeApiSession(data: Awaited<ReturnType<typeof loginWithApi>>): AuthSession {
+  if (!data.token) {
+    throw new Error('Auth API không trả về token hợp lệ.')
   }
 
-  const name = data.user?.fullName ?? data.user?.name ?? username
-  const email = data.user?.email ?? (username.includes('@') ? username : `${username}@hotel.local`)
-  const role = data.user?.role ?? 'Authenticated User'
-
   return {
-    token,
+    token: data.token,
     mode: 'api',
     user: {
-      id: String(data.user?.id ?? username),
-      name,
-      email,
-      role,
-      initials: createInitials(name),
+      id: String(data.user.id),
+      name: data.user.fullName,
+      email: data.user.username.includes('@') ? data.user.username : `${data.user.username}@hotel.local`,
+      role: data.user.position,
+      initials: createInitials(data.user.fullName),
     },
   }
 }
@@ -63,11 +57,8 @@ async function loginWithMock(credentials: LoginCredentials) {
 
   const normalizedUsername = credentials.username.trim().toLowerCase()
 
-  if (
-    !['admin', 'admin@hotel.com'].includes(normalizedUsername) ||
-    credentials.password !== 'admin123'
-  ) {
-    throw new Error('Sai tai khoan demo. Thu lai voi admin / admin123.')
+  if (!['admin', 'admin@hotel.com'].includes(normalizedUsername) || credentials.password !== 'admin123') {
+    throw new Error('Sai tài khoản demo. Thử lại với admin / admin123.')
   }
 
   return buildMockSession(normalizedUsername)
@@ -76,7 +67,7 @@ async function loginWithMock(credentials: LoginCredentials) {
 export async function loginUser(credentials: LoginCredentials) {
   const session = MOCK_AUTH_ENABLED
     ? await loginWithMock(credentials)
-    : normalizeApiSession(await loginWithApi(credentials.username, credentials.password), credentials.username)
+    : normalizeApiSession(await loginWithApi(credentials.username, credentials.password))
 
   persistSession(session, credentials.remember)
   return session

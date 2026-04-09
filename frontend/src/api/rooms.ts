@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { Room, RoomStatus, CreateRoomRequest, UpdateRoomRequest } from '../types'
+import type { CreateRoomRequest, Room, RoomStatus, UpdateRoomRequest } from '../types'
 
 export const roomsApi = {
   getAll: async (status?: RoomStatus): Promise<Room[]> => {
@@ -21,9 +21,5 @@ export const roomsApi = {
   update: async (id: number, data: UpdateRoomRequest): Promise<Room> => {
     const response = await apiClient.put<Room>(`/rooms/${id}`, data)
     return response.data
-  },
-
-  delete: async (id: number): Promise<void> => {
-    await apiClient.delete(`/rooms/${id}`)
   },
 }

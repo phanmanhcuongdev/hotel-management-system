@@ -33,7 +33,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
             <p className="text-sm font-black uppercase tracking-[0.24em] text-rose-500">Frontend Error</p>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900">Trang vừa gặp lỗi ngoài dự kiến</h1>
             <p className="mt-3 text-sm font-medium text-slate-500">
-              Bạn có thể tải lại để tiếp tục. Nếu lỗi lặp lại, cần kiểm tra data response hoặc component vừa mở.
+              Bạn có thể tải lại để tiếp tục. Nếu lỗi lặp lại, cần kiểm tra response từ API hoặc component vừa mở.
             </p>
             <button
               type="button"

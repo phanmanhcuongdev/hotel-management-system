@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
-import { RoomStatusTabs, RoomGridView, RoomTable, RoomFormModal, ChangeStatusModal } from '../components'
-import { useRooms, useUpdateRoom } from '../hooks/useRooms'
-import { mockBookings } from '../../../data/mockData'
+import { useMemo, useState } from 'react'
 import { Button } from '../../../components/ui'
-import type { Room, RoomStatus } from '../../../types'
+import { mockBookings } from '../../../data/mockData'
+import type { CreateRoomRequest, Room, RoomStatus } from '../../../types'
+import { ChangeStatusModal, RoomFormModal, RoomGridView, RoomStatusTabs, RoomTable } from '../components'
+import { useCreateRoom, useRooms, useUpdateRoom } from '../hooks/useRooms'
 
 type FilterType = 'booking' | 'type' | 'floor' | 'room'
 type ViewMode = 'grid' | 'list'
@@ -19,6 +19,7 @@ export default function RoomListPage() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
 
   const { data: rooms = [], isLoading } = useRooms()
+  const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
 
   const statusCounts = useMemo(() => {
@@ -40,12 +41,17 @@ export default function RoomListPage() {
 
   const filteredRooms = useMemo(() => {
     let result = rooms
-    if (statusFilter === 'available') result = result.filter((r) => r.status === 'AVAILABLE')
-    else if (statusFilter === 'occupied') result = result.filter((r) => r.status === 'OCCUPIED')
-    else if (statusFilter === 'dirty') result = result.filter((r) => r.status === 'MAINTENANCE')
-    if (searchValue) result = result.filter((r) => r.roomNumber.toLowerCase().includes(searchValue.toLowerCase()))
+
+    if (statusFilter === 'available') result = result.filter((room) => room.status === 'AVAILABLE')
+    else if (statusFilter === 'occupied') result = result.filter((room) => room.status === 'OCCUPIED')
+    else if (statusFilter === 'dirty') result = result.filter((room) => room.status === 'MAINTENANCE')
+
+    if (searchValue) {
+      result = result.filter((room) => room.roomNumber.toLowerCase().includes(searchValue.toLowerCase()))
+    }
+
     return result
-  }, [rooms, statusFilter, searchValue])
+  }, [rooms, searchValue, statusFilter])
 
   const roomsWithBookings = useMemo(() => {
     return filteredRooms.map((room) => ({
@@ -54,82 +60,124 @@ export default function RoomListPage() {
     }))
   }, [filteredRooms])
 
+  const openCreateModal = () => {
+    setSelectedRoom(null)
+    setFormModalOpen(true)
+  }
+
+  const openEditModal = (room: Room) => {
+    setSelectedRoom(room)
+    setFormModalOpen(true)
+  }
+
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room)
     setStatusModalOpen(true)
   }
 
-  const handleStatusUpdate = (status: RoomStatus) => {
+  const handleRoomSubmit = (data: { roomNumber: string; roomTypeId: string; status: RoomStatus }) => {
+    const payload: CreateRoomRequest = {
+      roomNumber: data.roomNumber.trim(),
+      roomTypeId: Number(data.roomTypeId),
+      status: data.status,
+    }
+
     if (selectedRoom) {
       updateRoom.mutate(
-        { id: selectedRoom.id, data: { status } },
+        { id: selectedRoom.id, data: payload },
         {
           onSuccess: () => {
-            setStatusModalOpen(false)
+            setFormModalOpen(false)
             setSelectedRoom(null)
           },
         }
       )
+      return
     }
+
+    createRoom.mutate(payload, {
+      onSuccess: () => {
+        setFormModalOpen(false)
+      },
+    })
   }
+
+  const handleStatusUpdate = (status: RoomStatus) => {
+    if (!selectedRoom) {
+      return
+    }
+
+    updateRoom.mutate(
+      {
+        id: selectedRoom.id,
+        data: {
+          roomNumber: selectedRoom.roomNumber,
+          roomTypeId: selectedRoom.type.id,
+          status,
+        },
+      },
+      {
+        onSuccess: () => {
+          setStatusModalOpen(false)
+          setSelectedRoom(null)
+        },
+      }
+    )
+  }
+
+  const isRoomMutationPending = createRoom.isPending || updateRoom.isPending
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-black italic text-slate-900 tracking-tight uppercase">Sơ đồ phòng nghỉ</h1>
-          <p className="mt-1 text-slate-500 font-medium">Theo dõi và vận hành trạng thái phòng thời gian thực.</p>
+          <h1 className="text-3xl font-black italic uppercase tracking-tight text-slate-900">Sơ đồ phòng nghỉ</h1>
+          <p className="mt-1 font-medium text-slate-500">Theo dõi và vận hành trạng thái phòng theo thời gian thực.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
-          <button 
+
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-1.5 shadow-sm">
+          <button
             onClick={() => setViewMode('grid')}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'grid' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+              viewMode === 'grid' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'
+            }`}
           >
             <span className="material-symbols-outlined text-[20px]">grid_view</span>
           </button>
-          <button 
+          <button
             onClick={() => setViewMode('list')}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${viewMode === 'list' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'}`}
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+              viewMode === 'list' ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'text-slate-400 hover:bg-slate-50'
+            }`}
           >
             <span className="material-symbols-outlined text-[20px]">view_list</span>
           </button>
         </div>
       </div>
 
-      {/* Main Dashboard Area */}
       <div className="space-y-6">
-        {/* Filter Toolbar */}
-        <div className="flex flex-col xl:flex-row gap-4 items-stretch xl:items-center">
-          <div className="flex-1 bg-white p-2 rounded-[2rem] border border-slate-100 shadow-sm overflow-x-auto no-scrollbar">
-            <RoomStatusTabs
-              tabs={statusTabs}
-              activeTab={statusFilter}
-              onTabChange={(key) => setStatusFilter(key as StatusFilter)}
-            />
+        <div className="flex flex-col items-stretch gap-4 xl:flex-row xl:items-center">
+          <div className="flex-1 overflow-x-auto rounded-[2rem] border border-slate-100 bg-white p-2 shadow-sm no-scrollbar">
+            <RoomStatusTabs tabs={statusTabs} activeTab={statusFilter} onTabChange={(key) => setStatusFilter(key as StatusFilter)} />
           </div>
-          
-          <div className="xl:w-80 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex items-center px-4 group focus-within:ring-2 focus-within:ring-primary-100 transition-all">
-            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary-600 transition-colors">search</span>
-            <input 
-              type="text" 
+
+          <div className="group flex items-center rounded-2xl border border-slate-100 bg-white px-4 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary-100 xl:w-80">
+            <span className="material-symbols-outlined text-slate-400 transition-colors group-focus-within:text-primary-600">search</span>
+            <input
+              type="text"
               placeholder="Tìm số phòng..."
-              className="w-full bg-transparent border-none outline-none px-3 py-2 text-sm font-bold text-slate-900 placeholder:text-slate-300"
+              className="w-full border-none bg-transparent px-3 py-3 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-300"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(event) => setSearchValue(event.target.value)}
             />
           </div>
 
-          <Button 
-            onClick={() => setFormModalOpen(true)}
-            className="rounded-2xl bg-slate-900 py-6 px-6 shadow-xl shadow-slate-200"
-          >
+          <Button onClick={openCreateModal} className="rounded-2xl bg-slate-900 px-6 py-6 shadow-xl shadow-slate-200">
             <span className="material-symbols-outlined mr-2">add</span>
-            Thêm Phòng
+            Thêm phòng
           </Button>
         </div>
 
-        {/* Room Display Area */}
         <div className="min-h-[400px]">
           {viewMode === 'grid' ? (
             <RoomGridView
@@ -139,13 +187,8 @@ export default function RoomListPage() {
               onRoomClick={handleRoomClick}
             />
           ) : (
-            <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-              <RoomTable
-                rooms={filteredRooms}
-                loading={isLoading}
-                onEdit={(room) => { setSelectedRoom(room); setFormModalOpen(true); }}
-                onChangeStatus={handleRoomClick}
-              />
+            <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-sm">
+              <RoomTable rooms={filteredRooms} loading={isLoading} onEdit={openEditModal} onChangeStatus={handleRoomClick} />
             </div>
           )}
         </div>
@@ -153,14 +196,21 @@ export default function RoomListPage() {
 
       <RoomFormModal
         isOpen={isFormModalOpen}
-        onClose={() => { setFormModalOpen(false); setSelectedRoom(null); }}
-        onSubmit={(data) => { console.log('Form submitted:', data); setFormModalOpen(false); setSelectedRoom(null); }}
-        room={selectedRoom || undefined}
+        onClose={() => {
+          setFormModalOpen(false)
+          setSelectedRoom(null)
+        }}
+        onSubmit={handleRoomSubmit}
+        room={selectedRoom ?? undefined}
+        loading={isRoomMutationPending}
       />
 
       <ChangeStatusModal
         isOpen={isStatusModalOpen}
-        onClose={() => { setStatusModalOpen(false); setSelectedRoom(null); }}
+        onClose={() => {
+          setStatusModalOpen(false)
+          setSelectedRoom(null)
+        }}
         onSubmit={handleStatusUpdate}
         room={selectedRoom}
         loading={updateRoom.isPending}

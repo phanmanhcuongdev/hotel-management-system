@@ -12,11 +12,11 @@ import com.hotel.backend.config.ObjectMapperConfig;
 import com.hotel.backend.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
@@ -47,7 +47,7 @@ class AuthControllerTest {
     private LoadAuthenticatedUserUseCase loadAuthenticatedUserUseCase;
 
     @Test
-    void loginSuccessReturnsBackwardCompatibleResponse() throws Exception {
+    void loginSuccessReturnsNormalizedResponse() throws Exception {
         LoginResult result = new LoginResult(1, "admin", "Admin User", "MANAGER", "jwt-token");
         when(loginUseCase.login(any())).thenReturn(result);
 
@@ -55,11 +55,11 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new TestLoginRequest("admin", "secret"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.username").value("admin"))
-                .andExpect(jsonPath("$.fullName").value("Admin User"))
-                .andExpect(jsonPath("$.position").value("MANAGER"))
-                .andExpect(jsonPath("$.token").value("jwt-token"));
+                .andExpect(jsonPath("$.token").value("jwt-token"))
+                .andExpect(jsonPath("$.user.id").value(1))
+                .andExpect(jsonPath("$.user.username").value("admin"))
+                .andExpect(jsonPath("$.user.fullName").value("Admin User"))
+                .andExpect(jsonPath("$.user.position").value("MANAGER"));
     }
 
     @Test

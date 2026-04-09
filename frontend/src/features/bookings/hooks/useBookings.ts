@@ -1,56 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { bookingsApi } from '../../../api'
 import { mockBookingsList } from '../../../data/mockData'
 import type { Booking, CreateBookingRequest, UpdateBookingRequest } from '../../../types'
 
-// Use mock data for demo - replace with API calls in production
 const USE_MOCK = false
 const USE_DEV_FALLBACK = import.meta.env.DEV && import.meta.env.VITE_ENABLE_API_FALLBACK !== 'false'
-
-async function readJsonSafely(response: Response) {
-  const contentType = response.headers.get('content-type') ?? ''
-
-  if (!contentType.includes('json')) {
-    return null
-  }
-
-  try {
-    return await response.json()
-  } catch {
-    return null
-  }
-}
-
-async function loadBookingsFromApi() {
-  const response = await fetch('/api/bookings')
-  const payload = await readJsonSafely(response)
-
-  if (!response.ok || !Array.isArray(payload)) {
-    if (!USE_DEV_FALLBACK) {
-      throw new Error('Khong tai duoc danh sach bookings tu API.')
-    }
-
-    console.warn('Bookings API unavailable, using mock bookings for frontend flow.')
-    return mockBookingsList
-  }
-
-  return payload.filter(isBookingLike) as Booking[]
-}
-
-function isBookingLike(value: unknown): value is Booking {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const booking = value as Partial<Booking>
-
-  return (
-    typeof booking.id === 'number' &&
-    typeof booking.guestName === 'string' &&
-    typeof booking.checkIn === 'string' &&
-    typeof booking.checkOut === 'string' &&
-    typeof booking.status === 'string'
-  )
-}
 
 export function useBookings() {
   return useQuery({
@@ -61,7 +15,16 @@ export function useBookings() {
         return mockBookingsList
       }
 
-      return loadBookingsFromApi()
+      try {
+        return await bookingsApi.getAll()
+      } catch (error) {
+        if (!USE_DEV_FALLBACK) {
+          throw error
+        }
+
+        console.warn('Bookings API unavailable, using mock bookings for frontend flow.', error)
+        return mockBookingsList
+      }
     },
   })
 }
@@ -75,18 +38,16 @@ export function useBooking(id: number) {
         return mockBookingsList.find((booking) => booking.id === id)
       }
 
-      const response = await fetch(`/api/bookings/${id}`)
-      const payload = await readJsonSafely(response)
-
-      if (!response.ok || !payload || Array.isArray(payload)) {
+      try {
+        return await bookingsApi.getById(id)
+      } catch (error) {
         if (!USE_DEV_FALLBACK) {
-          throw new Error(`Khong tai duoc booking #${id} tu API.`)
+          throw error
         }
 
+        console.warn(`Booking API unavailable for booking #${id}, using mock booking.`, error)
         return mockBookingsList.find((booking) => booking.id === id)
       }
-
-      return payload as Booking
     },
     enabled: !!id,
   })
@@ -99,15 +60,10 @@ export function useCreateBooking() {
     mutationFn: async (data: CreateBookingRequest) => {
       if (USE_MOCK) {
         await new Promise((resolve) => setTimeout(resolve, 500))
-        console.log('Mock create booking:', data)
-        return { id: Date.now(), ...data, status: 'PENDING' }
+        return { id: Date.now(), ...data, room: null, status: 'PENDING' } as unknown as Booking
       }
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      return response.json()
+
+      return bookingsApi.create(data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] })
@@ -123,16 +79,11 @@ export function useUpdateBooking() {
     mutationFn: async ({ id, data }: { id: number; data: UpdateBookingRequest }) => {
       if (USE_MOCK) {
         await new Promise((resolve) => setTimeout(resolve, 500))
-        console.log('Mock update booking:', id, data)
-        const booking = mockBookingsList.find((b) => b.id === id)
-        return { ...booking, ...data }
+        const booking = mockBookingsList.find((item) => item.id === id)
+        return { ...booking, ...data } as Booking
       }
-      const response = await fetch(`/api/bookings/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      return response.json()
+
+      return bookingsApi.update(id, data)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] })
@@ -148,16 +99,11 @@ export function useCancelBooking() {
     mutationFn: async (id: number) => {
       if (USE_MOCK) {
         await new Promise((resolve) => setTimeout(resolve, 500))
-        console.log('Mock cancel booking:', id)
-        const booking = mockBookingsList.find((b) => b.id === id)
-        return { ...booking, status: 'CANCELLED' }
+        const booking = mockBookingsList.find((item) => item.id === id)
+        return { ...booking, status: 'CANCELLED' } as Booking
       }
-      const response = await fetch(`/api/bookings/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'CANCELLED' }),
-      })
-      return response.json()
+
+      return bookingsApi.cancel(id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] })

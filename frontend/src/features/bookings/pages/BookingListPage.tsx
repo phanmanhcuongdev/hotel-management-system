@@ -1,14 +1,9 @@
-import { useState, useMemo } from 'react'
-import { Card, CardHeader, CardContent, Button } from '../../../components/ui'
-import {
-  BookingTable,
-  CreateBookingModal,
-  BookingDetailModal,
-  UpdateStatusModal,
-} from '../components'
-import { useBookings, useCreateBooking, useUpdateBooking, useCancelBooking } from '../hooks/useBookings'
-import { useRooms } from '../../rooms/hooks/useRooms'
+import { useMemo, useState } from 'react'
+import { Button, Card, CardContent, CardHeader } from '../../../components/ui'
 import type { Booking, BookingStatus } from '../../../types'
+import { useRooms } from '../../rooms/hooks/useRooms'
+import { BookingDetailModal, BookingTable, CreateBookingModal, UpdateStatusModal } from '../components'
+import { useBookings, useCancelBooking, useCreateBooking, useUpdateBooking } from '../hooks/useBookings'
 
 export default function BookingListPage() {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false)
@@ -25,10 +20,8 @@ export default function BookingListPage() {
 
   const filteredBookings = useMemo(() => {
     if (!searchValue) return bookings
-    return bookings.filter(b => 
-      b.id.toString().includes(searchValue) || 
-      (b.room?.roomNumber ?? '').includes(searchValue)
-    )
+
+    return bookings.filter((booking) => booking.id.toString().includes(searchValue) || (booking.room?.roomNumber ?? '').includes(searchValue))
   }, [bookings, searchValue])
 
   const handleViewDetails = (booking: Booking) => {
@@ -56,58 +49,56 @@ export default function BookingListPage() {
   }
 
   const handleStatusSubmit = (status: BookingStatus) => {
-    if (selectedBooking) {
-      updateBooking.mutate(
-        { id: selectedBooking.id, data: { status } },
-        {
-          onSuccess: () => {
-            setUpdateModalOpen(false)
-            setSelectedBooking(null)
-          },
-        }
-      )
+    if (!selectedBooking) {
+      return
     }
+
+    updateBooking.mutate(
+      { id: selectedBooking.id, data: { status } },
+      {
+        onSuccess: () => {
+          setUpdateModalOpen(false)
+          setSelectedBooking(null)
+        },
+      }
+    )
   }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-black italic text-slate-900 tracking-tight uppercase">Quản lý Đặt phòng</h1>
-          <p className="mt-1 text-slate-500 font-medium">Theo dõi, kiểm tra và xử lý các yêu cầu đặt phòng của khách hàng.</p>
+          <h1 className="text-3xl font-black italic uppercase tracking-tight text-slate-900">Quản lý đặt phòng</h1>
+          <p className="mt-1 font-medium text-slate-500">Theo dõi, kiểm tra và xử lý các yêu cầu đặt phòng của khách hàng.</p>
         </div>
+
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden items-center gap-2 rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm sm:flex">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hệ thống ổn định</span>
           </div>
-          <Button 
-            onClick={() => setCreateModalOpen(true)}
-            className="rounded-2xl bg-primary-600 hover:bg-primary-500 py-6 px-8 shadow-xl shadow-primary-200"
-          >
+          <Button onClick={() => setCreateModalOpen(true)} className="rounded-2xl bg-primary-600 px-8 py-6 shadow-xl shadow-primary-200 hover:bg-primary-500">
             <span className="material-symbols-outlined mr-2">add_circle</span>
-            Tạo Đơn Mới
+            Tạo đơn mới
           </Button>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <Card className="border-none shadow-2xl shadow-slate-200/50 overflow-visible">
-        <CardHeader 
-          title="Danh sách Đơn đặt phòng" 
+      <Card className="overflow-visible border-none shadow-2xl shadow-slate-200/50">
+        <CardHeader
+          title="Danh sách đơn đặt phòng"
           subtitle={`Tổng số ${filteredBookings.length} đơn trong hệ thống`}
           icon="book_online"
           action={
             <div className="flex items-center gap-3">
-              <div className="w-64 bg-slate-50 p-1 rounded-xl border border-slate-100 flex items-center px-3 group focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100 transition-all">
-                <span className="material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                <input 
-                  type="text" 
+              <div className="group flex w-64 items-center rounded-xl border border-slate-100 bg-slate-50 px-3 p-1 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100">
+                <span className="material-symbols-outlined text-[18px] text-slate-400">search</span>
+                <input
+                  type="text"
                   placeholder="Tìm mã đơn, số phòng..."
-                  className="w-full bg-transparent border-none outline-none px-2 py-1.5 text-xs font-bold text-slate-900 placeholder:text-slate-400"
+                  className="w-full border-none bg-transparent px-2 py-1.5 text-xs font-bold text-slate-900 outline-none placeholder:text-slate-400"
                   value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
+                  onChange={(event) => setSearchValue(event.target.value)}
                 />
               </div>
               <Button variant="ghost" size="sm" className="h-10 w-10 rounded-xl p-0 hover:bg-slate-50">
@@ -118,13 +109,7 @@ export default function BookingListPage() {
         />
         <CardContent noPadding>
           <div className="min-h-[400px]">
-            <BookingTable
-              bookings={filteredBookings}
-              loading={isLoading}
-              onViewDetails={handleViewDetails}
-              onUpdateStatus={handleUpdateStatus}
-              onCancel={handleCancel}
-            />
+            <BookingTable bookings={filteredBookings} loading={isLoading} onViewDetails={handleViewDetails} onUpdateStatus={handleUpdateStatus} onCancel={handleCancel} />
           </div>
         </CardContent>
       </Card>
