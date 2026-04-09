@@ -27,12 +27,11 @@ public final class RoomMapper {
         entity.roomNumber = domain.roomNumber();
         entity.status = domain.status().name();
 
-        RoomTypeJpaEntity typeEntity = new RoomTypeJpaEntity();
-        typeEntity.id = domain.type().id();
-        typeEntity.name = domain.type().name();
-        typeEntity.price = domain.type().price();
-        typeEntity.capacity = domain.type().capacity();
-        entity.roomType = typeEntity;
+        if (domain.type() != null) {
+            RoomTypeJpaEntity typeEntity = new RoomTypeJpaEntity();
+            typeEntity.id = domain.type().id();
+            entity.roomType = typeEntity;
+        }
 
         return entity;
     }

@@ -15,7 +15,7 @@ public class RoomJpaEntity {
     @Column(name = "status", nullable = false)
     public String status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_type_id", nullable = false)
     public RoomTypeJpaEntity roomType;
 }
