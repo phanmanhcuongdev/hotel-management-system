@@ -10,15 +10,16 @@ import com.hotel.backend.application.port.out.LoadRoomPort;
 import com.hotel.backend.application.port.out.SaveBookingPort;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class CreateBookingService implements CreateBookingUseCase {
 
     private final LoadRoomPort loadRoomPort;
     private final SaveBookingPort saveBookingPort;
-
-    public CreateBookingService(LoadRoomPort loadRoomPort, SaveBookingPort saveBookingPort) {
-        this.loadRoomPort = loadRoomPort;
-        this.saveBookingPort = saveBookingPort;
-    }
 
     @Override
     public Booking create(CreateBookingCommand cmd) {

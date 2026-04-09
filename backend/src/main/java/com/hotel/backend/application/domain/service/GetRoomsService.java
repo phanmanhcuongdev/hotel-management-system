@@ -1,23 +1,23 @@
 package com.hotel.backend.application.domain.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.hotel.backend.application.domain.model.Room;
 import com.hotel.backend.application.domain.model.RoomStatus;
 import com.hotel.backend.application.port.in.GetRoomsUseCase;
 import com.hotel.backend.application.port.out.LoadRoomPort;
 import com.hotel.backend.application.port.out.LoadRoomsPort;
 
-import java.util.List;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class GetRoomsService implements GetRoomsUseCase {
 
     private final LoadRoomsPort loadRoomsPort;
     private final LoadRoomPort loadRoomPort;
-
-    public GetRoomsService(LoadRoomsPort loadRoomsPort, LoadRoomPort loadRoomPort){
-        this.loadRoomsPort = loadRoomsPort;
-        this.loadRoomPort = loadRoomPort;
-    }
 
     @Override
     public List<Room> getRooms(Optional<RoomStatus> status) {

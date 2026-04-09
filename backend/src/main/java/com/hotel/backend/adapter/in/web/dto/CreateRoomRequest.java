@@ -1,8 +1,9 @@
 package com.hotel.backend.adapter.in.web.dto;
 
+import com.hotel.backend.application.domain.model.RoomStatus;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-
 
 public record CreateRoomRequest(
     @NotBlank(message = "Room number is required")
@@ -11,19 +12,9 @@ public record CreateRoomRequest(
     @NotNull(message = "Room type ID is required")
     Long roomTypeId,
 
-    @NotBlank(message = "Status is required")
-    String status
+    @NotNull(message = "Status is required")
+    RoomStatus status
 )
 {
-    public String getRoomNumber() {
-        return roomNumber;
-    }
 
-    public Long getRoomTypeId() {
-        return roomTypeId;
-    }
-
-    public String getStatus() {
-        return status;
-    }
 }

@@ -18,15 +18,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanConfig {
 
-    @Bean
-    public LoadRoomsPort loadRoomsPort(SpringDataRoomRepository repo, SpringDataRoomTypeRepository typeRepo) {
-        return new RoomPersistenceAdapter(repo, typeRepo);
-    }
-
-    @Bean
-    public LoadRoomPort loadRoomPort(SpringDataRoomRepository repo, SpringDataRoomTypeRepository typeRepo) {
-        return new RoomPersistenceAdapter(repo, typeRepo);
-    }
 
     @Bean
     public SaveBookingPort saveBookingPort(SpringDataBookingRepository repo) {

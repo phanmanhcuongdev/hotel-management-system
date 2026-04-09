@@ -3,6 +3,7 @@ package com.hotel.backend.adapter.in.web;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hotel.backend.adapter.in.web.dto.CreateRoomRequest;
@@ -19,18 +21,15 @@ import com.hotel.backend.application.port.in.GetRoomsUseCase;
 import com.hotel.backend.application.port.in.ManagerRoomUseCase;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/rooms")
-public class RoomController {
+@RequiredArgsConstructor
+public class RoomController{
 
     private final GetRoomsUseCase getRoomsUseCase;
     private final ManagerRoomUseCase managerRoomUseCase;
-
-    public RoomController(GetRoomsUseCase getRoomsUseCase, ManagerRoomUseCase managerRoomUseCase) {
-        this.getRoomsUseCase = getRoomsUseCase;
-        this.managerRoomUseCase = managerRoomUseCase;
-    }
 
     @GetMapping
     public List<RoomResponse> getRooms(@RequestParam Optional<RoomStatus> status) {
@@ -46,6 +45,7 @@ public class RoomController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public RoomResponse createRoom(@RequestBody @Valid CreateRoomRequest request) {
         var room = managerRoomUseCase.createRoom(
                 request.roomNumber(),
