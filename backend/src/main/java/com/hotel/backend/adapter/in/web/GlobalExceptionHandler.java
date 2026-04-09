@@ -3,6 +3,7 @@ package com.hotel.backend.adapter.in.web;
 import com.hotel.backend.adapter.in.web.dto.ApiErrorResponse;
 import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
 import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidCredentialsException.class)
@@ -61,6 +63,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiErrorResponse handleUnexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
         return new ApiErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred");
     }
 }

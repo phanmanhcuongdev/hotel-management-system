@@ -22,7 +22,7 @@ public class RoomPersistenceAdapter implements LoadRoomsPort, LoadRoomPort, Save
 
     @Override
     public List<Room> loadRooms(Optional<RoomStatus> status) {
-        List<RoomJpaEntity> entities = status
+        List<RoomEntity> entities = status
                 .map(roomStatus -> roomRepo.findByStatus(roomStatus.name()))
                 .orElseGet(roomRepo::findAll);
 
@@ -36,7 +36,7 @@ public class RoomPersistenceAdapter implements LoadRoomsPort, LoadRoomPort, Save
 
     @Override
     public Room saveRoom(Room room) {
-        RoomJpaEntity entity = RoomMapper.toEntity(room);
+        RoomEntity entity = RoomMapper.toEntity(room);
         if (room.type() != null && room.type().id() != null) {
             entity.roomType = roomTypeRepo.getReferenceById(room.type().id());
         }

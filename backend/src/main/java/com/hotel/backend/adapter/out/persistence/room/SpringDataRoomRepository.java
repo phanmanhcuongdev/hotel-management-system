@@ -6,8 +6,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SpringDataRoomRepository extends JpaRepository<RoomJpaEntity, Long> {
-    List<RoomJpaEntity> findByStatus(String status);
+public interface SpringDataRoomRepository extends JpaRepository<RoomEntity, Long> {
+    List<RoomEntity> findByStatus(String status);
 
     boolean existsByRoomNumber(String roomNumber);
 

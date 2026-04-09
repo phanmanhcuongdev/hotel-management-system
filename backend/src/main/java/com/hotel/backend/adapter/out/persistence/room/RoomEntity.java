@@ -1,10 +1,11 @@
 package com.hotel.backend.adapter.out.persistence.room;
 
+import com.hotel.backend.adapter.out.persistence.hotel.HotelEntity;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "rooms")
-public class RoomJpaEntity {
+public class RoomEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
@@ -17,5 +18,9 @@ public class RoomJpaEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_type_id", nullable = false)
-    public RoomTypeJpaEntity roomType;
+    public RoomTypeEntity roomType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "hotel_id")
+    public HotelEntity hotel;
 }

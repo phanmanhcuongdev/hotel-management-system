@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "room_types")
-public class RoomTypeJpaEntity {
+public class RoomTypeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
@@ -19,8 +19,12 @@ public class RoomTypeJpaEntity {
     @Column(nullable = false)
     public String name;
 
-    @Column(nullable = false)
+    @Column(length = 500)
+    public String description;
+
+    @Column(nullable = false, precision = 19, scale = 2)
     public BigDecimal price;
 
+    @Column(name = "capacity")
     public Integer capacity;
 }
