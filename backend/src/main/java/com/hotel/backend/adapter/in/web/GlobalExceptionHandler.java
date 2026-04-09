@@ -2,6 +2,7 @@ package com.hotel.backend.adapter.in.web;
 
 import com.hotel.backend.adapter.in.web.dto.ApiErrorResponse;
 import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
+import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,6 +32,18 @@ public class GlobalExceptionHandler {
                 .toList();
 
         return new ApiErrorResponse("VALIDATION_ERROR", "Request validation failed", details);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleNotFound(ResourceNotFoundException ex) {
+        return new ApiErrorResponse("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleIllegalArgument(IllegalArgumentException ex) {
+        return new ApiErrorResponse("BAD_REQUEST", ex.getMessage());
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
