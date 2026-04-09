@@ -4,7 +4,33 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f1c321e2-d6bd-46e5-9308-9d87d68cd120" name="Changes" comment="" />
+    <list default="true" id="f1c321e2-d6bd-46e5-9308-9d87d68cd120" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build-backend.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build-backend.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/build-frontend.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/build-frontend.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/adapter/in/web/auth/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/adapter/in/web/auth/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/adapter/in/web/auth/dto/LoginResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/adapter/in/web/auth/dto/LoginResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/application/domain/model/RoomStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/application/domain/model/RoomStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/config/DevDataSeeder.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotel/backend/config/DevDataSeeder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/hotel/backend/AuthWebContextTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/hotel/backend/AuthWebContextTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/hotel/backend/adapter/in/web/auth/AuthControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/hotel/backend/adapter/in/web/auth/AuthControllerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/authApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/authApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/rooms.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/rooms.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AppErrorBoundary.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AppErrorBoundary.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/auth/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/auth/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/auth/authService.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/auth/authService.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/auth/authService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/auth/authService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/bookings/hooks/useBookings.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/bookings/hooks/useBookings.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/bookings/pages/BookingListPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/bookings/pages/BookingListPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/rooms/components/ChangeStatusModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/rooms/components/ChangeStatusModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/rooms/components/RoomCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/rooms/components/RoomCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/rooms/components/RoomFormModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/rooms/components/RoomFormModal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/rooms/hooks/useRooms.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/rooms/hooks/useRooms.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/features/rooms/pages/RoomListPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/features/rooms/pages/RoomListPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/types/room.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/room.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -100,7 +126,7 @@
       <workItem from="1775541458834" duration="991000" />
       <workItem from="1775550754100" duration="1549000" />
       <workItem from="1775581637259" duration="6000" />
-      <workItem from="1775741897610" duration="907000" />
+      <workItem from="1775741897610" duration="6091000" />
     </task>
     <servers />
   </component>

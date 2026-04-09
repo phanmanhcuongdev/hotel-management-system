@@ -1,6 +1,6 @@
 # hotel-management-system
 
-Landing page tài liệu dev cho repo này. `docs/` là nguồn sự thật, càng cập nhật code càng phải bổ sung tài liệu.
+Trang tài liệu dev cho repository này. `docs/` là nguồn sự thật, nên mỗi thay đổi về kiến trúc, API hoặc database cần được cập nhật lại ở đó trước khi merge.
 
 ## Chỉ đường tài liệu
 - [Project overview & PDR](docs/project-overview-pdr.md)
@@ -9,11 +9,11 @@ Landing page tài liệu dev cho repo này. `docs/` là nguồn sự thật, cà
 - [System architecture & data flow](docs/system-architecture.md)
 
 ## Quick start
-1. Cài MySQL (schema `hotel_management` mô tả trong `database/hotel-management.sql`).
-2. Backend: `cd backend && ./mvnw spring-boot:run` (Java 21, Spring Boot 4). Mang config `SPRING_DATASOURCE_*` ra môi trường thay vì file `application.yaml` hardcode.
-3. Frontend: `cd frontend && npm install && npm run dev` (Vite 5, React 18). Vite dev proxy `/api` -> `http://localhost:8080`.
-4. Tài liệu còn nhiều gap (API chưa đồng bộ, auth chưa hoàn thiện); xem từng file trong `docs/` để biết chi tiết.
+1. Cài MySQL và tạo schema `hotel_management` theo mô tả trong `database/hotel-management.sql`.
+2. Chạy backend: `cd backend && ./mvnw spring-boot:run` với Java 21. Cấu hình datasource và JWT nên được truyền bằng biến môi trường.
+3. Chạy frontend: `cd frontend && npm install && npm run dev`. Vite dev server proxy `/api` sang `http://localhost:8080`.
+4. Nếu cần hiểu nhanh cấu trúc hệ thống, đọc `docs/system-architecture.md` và `docs/codebase-summary.md`.
 
 ## Giữ docs sống
-- Mọi thay đổi kiến trúc, API, database đều phải ghi lại trong `docs/` trước khi merge.
-- Nếu cần tạo snapshot phục vụ AI/review, hãy xuất ra file tạm riêng; không ghi đè các tài liệu chuẩn trong `docs/`.
+- Mọi thay đổi về kiến trúc, API, database đều phải ghi lại trong `docs/`.
+- Nếu cần tạo snapshot phục vụ AI hoặc review, hãy xuất ra file tạm riêng thay vì ghi đè tài liệu chuẩn.

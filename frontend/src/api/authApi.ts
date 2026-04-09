@@ -1,15 +1,15 @@
 import { apiClient } from './client'
 
+export interface LoginUserDto {
+  id: string | number
+  username: string
+  fullName: string
+  position: string
+}
+
 export interface LoginApiResponse {
-  token?: string
-  accessToken?: string
-  user?: {
-    id?: string | number
-    fullName?: string
-    name?: string
-    email?: string
-    role?: string
-  }
+  token: string
+  user: LoginUserDto
 }
 
 export async function login(username: string, password: string) {

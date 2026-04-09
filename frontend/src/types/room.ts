@@ -21,7 +21,7 @@ export interface CreateRoomRequest {
 }
 
 export interface UpdateRoomRequest {
-  roomNumber?: string
-  roomTypeId?: number
-  status?: RoomStatus
+  roomNumber: string
+  roomTypeId: number
+  status: RoomStatus
 }

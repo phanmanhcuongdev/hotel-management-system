@@ -21,19 +21,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody @Valid LoginRequest request) {
-        LoginCommand command = new LoginCommand(
-                request.getUsername(),
-                request.getPassword()
-        );
-
+        LoginCommand command = new LoginCommand(request.getUsername(), request.getPassword());
         LoginResult result = loginUseCase.login(command);
 
         return new LoginResponse(
-                result.id(),
-                result.username(),
-                result.fullName(),
-                result.position(),
-                result.token()
+                result.token(),
+                new LoginResponse.UserInfo(
+                        result.id(),
+                        result.username(),
+                        result.fullName(),
+                        result.position()
+                )
         );
     }
 }
