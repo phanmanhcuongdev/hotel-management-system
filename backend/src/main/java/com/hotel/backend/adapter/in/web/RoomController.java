@@ -9,6 +9,7 @@ import com.hotel.backend.config.WebAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ public class RoomController {
     private final ManagerRoomUseCase managerRoomUseCase;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<RoomResponse> getRooms(@RequestParam Optional<RoomStatus> status) {
         return getRoomsUseCase.getRooms(status).stream()
                 .map(RoomWebMapper::toResponse)
@@ -37,12 +39,14 @@ public class RoomController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse getRoomById(@PathVariable Long id) {
         return RoomWebMapper.toResponse(getRoomsUseCase.getRoomById(id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse createRoom(@RequestBody @Valid CreateRoomRequest request) {
         return RoomWebMapper.toResponse(managerRoomUseCase.createRoom(
                 request.roomNumber(),
@@ -52,6 +56,7 @@ public class RoomController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public RoomResponse updateRoom(@PathVariable Long id, @RequestBody @Valid CreateRoomRequest request) {
         return RoomWebMapper.toResponse(managerRoomUseCase.updateRoom(
                 id,

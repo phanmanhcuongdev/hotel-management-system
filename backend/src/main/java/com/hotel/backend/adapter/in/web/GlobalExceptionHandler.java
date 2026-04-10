@@ -1,6 +1,7 @@
 package com.hotel.backend.adapter.in.web;
 
 import com.hotel.backend.adapter.in.web.dto.ApiErrorResponse;
+import com.hotel.backend.application.domain.exception.BusinessConflictException;
 import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
 import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiErrorResponse handleNotFound(ResourceNotFoundException ex) {
         return new ApiErrorResponse("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleBusinessConflict(BusinessConflictException ex) {
+        return new ApiErrorResponse("BUSINESS_CONFLICT", ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

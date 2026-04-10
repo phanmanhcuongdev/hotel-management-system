@@ -8,6 +8,7 @@ import com.hotel.backend.application.port.out.SaveBookingPort;
 import com.hotel.backend.config.PersistenceAdapter;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,5 +41,14 @@ public class BookingPersistenceAdapter implements SaveBookingPort, LoadBookingPo
                 .stream()
                 .map(BookingMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public boolean existsActiveOverlap(Long roomId, LocalDate checkIn, LocalDate checkOut, List<BookingStatus> statuses) {
+        List<String> statusNames = statuses.stream()
+                .map(BookingStatus::name)
+                .toList();
+
+        return !bookingRepo.findActiveOverlapsForUpdate(roomId, checkIn, checkOut, statusNames).isEmpty();
     }
 }

@@ -3,6 +3,7 @@ package com.hotel.backend.adapter.in.web;
 import com.hotel.backend.adapter.in.web.dto.BookingResponse;
 import com.hotel.backend.adapter.in.web.dto.CreateBookingRequest;
 import com.hotel.backend.adapter.in.web.dto.UpdateBookingStatusRequest;
+import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
 import com.hotel.backend.application.domain.model.BookingStatus;
 import com.hotel.backend.application.port.in.BookingWithRoom;
 import com.hotel.backend.application.port.in.CreateBookingCommand;
@@ -14,6 +15,7 @@ import com.hotel.backend.config.WebAdapter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +32,7 @@ public class BookingController {
     private final UpdateBookingStatusUseCase updateBookingStatusUseCase;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<BookingResponse> getAll(@RequestParam(required = false) String status) {
         Optional<BookingStatus> statusFilter = Optional.empty();
         if (status != null && !status.isBlank()) {
@@ -46,14 +49,16 @@ public class BookingController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public BookingResponse getById(@PathVariable Long id) {
         BookingWithRoom result = getBookingUseCase.getById(id)
-                .orElseThrow(() -> new IllegalStateException("Booking not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
         return BookingWebMapper.toResponse(result.booking(), result.room());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN')")
     public BookingResponse create(@Valid @RequestBody CreateBookingRequest req) {
         var created = createBookingUseCase.create(new CreateBookingCommand(
                 req.guestName(), req.phoneNumber(), req.email(),
@@ -61,11 +66,12 @@ public class BookingController {
         ));
 
         BookingWithRoom result = getBookingUseCase.getById(created.id())
-                .orElseThrow(() -> new IllegalStateException("Booking not found after creation"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found after creation"));
         return BookingWebMapper.toResponse(result.booking(), result.room());
     }
 
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public BookingResponse updateStatus(@PathVariable Long id,
                                         @Valid @RequestBody UpdateBookingStatusRequest req) {
         BookingStatus newStatus;
@@ -78,7 +84,7 @@ public class BookingController {
         var updated = updateBookingStatusUseCase.updateStatus(id, newStatus);
 
         BookingWithRoom result = getBookingUseCase.getById(updated.id())
-                .orElseThrow(() -> new IllegalStateException("Booking not found after update"));
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found after update"));
         return BookingWebMapper.toResponse(result.booking(), result.room());
     }
 }
