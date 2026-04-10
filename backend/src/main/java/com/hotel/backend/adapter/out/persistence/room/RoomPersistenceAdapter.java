@@ -36,7 +36,17 @@ public class RoomPersistenceAdapter implements LoadRoomsPort, LoadRoomPort, Save
 
     @Override
     public Room saveRoom(Room room) {
-        RoomEntity entity = RoomMapper.toEntity(room);
+        RoomEntity entity;
+        if (room.id() != null) {
+            entity = roomRepo.findById(room.id()).orElseGet(RoomEntity::new);
+        } else {
+            entity = new RoomEntity();
+        }
+
+        entity.id = room.id();
+        entity.roomNumber = room.roomNumber();
+        entity.status = room.status().name();
+
         if (room.type() != null && room.type().id() != null) {
             entity.roomType = roomTypeRepo.getReferenceById(room.type().id());
         }

@@ -7,18 +7,20 @@ import type { CreateBookingRequest } from '../../../types'
 
 const bookingSchema = z.object({
   guestName: z.string().min(1, 'Guest name is required'),
-  phoneNumber: z.string().min(1, 'Phone number is required'),
+  phoneNumber: z.string().regex(/^[0-9+()\-\s]{8,20}$/, 'Invalid phone number'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   roomId: z.string().min(1, 'Room is required'),
   checkIn: z.string().min(1, 'Check-in date is required'),
   checkOut: z.string().min(1, 'Check-out date is required'),
 }).refine((data) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const checkIn = new Date(data.checkIn)
   const checkOut = new Date(data.checkOut)
-  return checkOut > checkIn
+  return checkIn >= today && checkOut > checkIn
 }, {
-  message: 'Check-out must be after check-in',
-  path: ['checkOut'],
+  message: 'Check-in must be today or later, and check-out must be after check-in',
+  path: ['checkIn'],
 })
 
 type BookingFormData = z.infer<typeof bookingSchema>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button } from '../../../components/ui'
-import { mockBookings } from '../../../data/mockData'
-import type { CreateRoomRequest, Room, RoomStatus } from '../../../types'
+import { useAuth } from '../../auth/useAuth'
+import type { CreateRoomRequest, Room, RoomStatus, RoomType } from '../../../types'
 import { ChangeStatusModal, RoomFormModal, RoomGridView, RoomStatusTabs, RoomTable } from '../components'
 import { useCreateRoom, useRooms, useUpdateRoom } from '../hooks/useRooms'
 
@@ -10,6 +10,8 @@ type ViewMode = 'grid' | 'list'
 type StatusFilter = 'all' | 'available' | 'reserved' | 'checkin' | 'occupied' | 'checkout' | 'dirty'
 
 export default function RoomListPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role?.trim().toUpperCase() === 'ADMIN'
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [activeFilter] = useState<FilterType>('floor')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
@@ -18,9 +20,25 @@ export default function RoomListPage() {
   const [isStatusModalOpen, setStatusModalOpen] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
 
-  const { data: rooms = [], isLoading } = useRooms()
+  const { data: rooms = [], isLoading, error: roomsError } = useRooms(undefined, { enabled: isAdmin })
   const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
+
+  const roomTypes = useMemo<RoomType[]>(() => {
+    const byId = new Map<number, RoomType>()
+
+    rooms.forEach((room) => {
+      if (!byId.has(room.type.id)) {
+        byId.set(room.type.id, room.type)
+      }
+    })
+
+    if (selectedRoom && !byId.has(selectedRoom.type.id)) {
+      byId.set(selectedRoom.type.id, selectedRoom.type)
+    }
+
+    return Array.from(byId.values())
+  }, [rooms, selectedRoom])
 
   const statusCounts = useMemo(() => {
     const counts = { all: rooms.length, available: 0, reserved: 0, checkin: 0, occupied: 0, checkout: 0, dirty: 0 }
@@ -53,24 +71,35 @@ export default function RoomListPage() {
     return result
   }, [rooms, searchValue, statusFilter])
 
-  const roomsWithBookings = useMemo(() => {
-    return filteredRooms.map((room) => ({
-      ...room,
-      currentBooking: room.status === 'OCCUPIED' ? mockBookings[room.id] : undefined,
-    }))
-  }, [filteredRooms])
+  const pageErrorMessage =
+    (roomsError instanceof Error && roomsError.message) ||
+    (createRoom.error instanceof Error && createRoom.error.message) ||
+    (updateRoom.error instanceof Error && updateRoom.error.message) ||
+    null
 
   const openCreateModal = () => {
+    if (!isAdmin) {
+      return
+    }
+
     setSelectedRoom(null)
     setFormModalOpen(true)
   }
 
   const openEditModal = (room: Room) => {
+    if (!isAdmin) {
+      return
+    }
+
     setSelectedRoom(room)
     setFormModalOpen(true)
   }
 
   const handleRoomClick = (room: Room) => {
+    if (!isAdmin) {
+      return
+    }
+
     setSelectedRoom(room)
     setStatusModalOpen(true)
   }
@@ -127,6 +156,14 @@ export default function RoomListPage() {
 
   const isRoomMutationPending = createRoom.isPending || updateRoom.isPending
 
+  if (!isAdmin) {
+    return (
+      <div className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-900">
+        Ban khong co quyen truy cap khu vuc quan ly phong. Backend hien chi cho phep tai khoan ADMIN xem va cap nhat du lieu nay.
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -155,6 +192,12 @@ export default function RoomListPage() {
         </div>
       </div>
 
+      {pageErrorMessage && (
+        <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
+          {pageErrorMessage}
+        </div>
+      )}
+
       <div className="space-y-6">
         <div className="flex flex-col items-stretch gap-4 xl:flex-row xl:items-center">
           <div className="flex-1 overflow-x-auto rounded-[2rem] border border-slate-100 bg-white p-2 shadow-sm no-scrollbar">
@@ -181,7 +224,7 @@ export default function RoomListPage() {
         <div className="min-h-[400px]">
           {viewMode === 'grid' ? (
             <RoomGridView
-              rooms={roomsWithBookings}
+              rooms={filteredRooms}
               loading={isLoading}
               groupBy={activeFilter === 'floor' ? 'floor' : 'type'}
               onRoomClick={handleRoomClick}
@@ -202,6 +245,7 @@ export default function RoomListPage() {
         }}
         onSubmit={handleRoomSubmit}
         room={selectedRoom ?? undefined}
+        roomTypes={roomTypes}
         loading={isRoomMutationPending}
       />
 
