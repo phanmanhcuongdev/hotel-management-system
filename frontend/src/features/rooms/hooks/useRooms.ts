@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { roomsApi } from '../../../api'
-import type { CreateRoomRequest, Room, RoomStatus, UpdateRoomRequest } from '../../../types'
+import { roomsApi, type AvailableRoomsSearchParams, type RoomsSearchParams } from '../../../api/rooms'
+import type { CreateRoomRequest, Room, UpdateRoomRequest } from '../../../types'
 
-export function useRooms(status?: RoomStatus, options?: { enabled?: boolean }) {
+export function useRooms(filters?: RoomsSearchParams, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ['rooms', status],
-    queryFn: (): Promise<Room[]> => roomsApi.getAll(status),
+    queryKey: ['rooms', filters ?? null],
+    queryFn: (): Promise<Room[]> => roomsApi.getAll(filters),
     enabled: options?.enabled ?? true,
   })
 }
@@ -15,6 +15,20 @@ export function useRoom(id: number) {
     queryKey: ['rooms', id],
     queryFn: (): Promise<Room> => roomsApi.getById(id),
     enabled: !!id,
+  })
+}
+
+export function useAvailableRooms(filters?: AvailableRoomsSearchParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: ['rooms', 'available', filters ?? null],
+    queryFn: (): Promise<Room[]> => {
+      if (!filters) {
+        return Promise.resolve([])
+      }
+
+      return roomsApi.getAvailable(filters)
+    },
+    enabled: (options?.enabled ?? true) && !!filters,
   })
 }
 
@@ -34,6 +48,17 @@ export function useUpdateRoom() {
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateRoomRequest }) => roomsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+    },
+  })
+}
+
+export function useDeleteRoom() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => roomsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rooms'] })
     },

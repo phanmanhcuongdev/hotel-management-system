@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { bookingsApi } from '../../../api'
-import type { Booking, CreateBookingRequest, UpdateBookingRequest } from '../../../types'
+import { bookingsApi, type BookingsSearchParams } from '../../../api/bookings'
+import type { Booking, CreateBookingRequest, UpdateBookingDetailsRequest, UpdateBookingRequest } from '../../../types'
 
-export function useBookings(options?: { enabled?: boolean }) {
+export function useBookings(filters?: BookingsSearchParams, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ['bookings'],
-    queryFn: (): Promise<Booking[]> => bookingsApi.getAll(),
+    queryKey: ['bookings', filters ?? null],
+    queryFn: (): Promise<Booking[]> => bookingsApi.getAll(filters),
     enabled: options?.enabled ?? true,
   })
 }
@@ -30,6 +30,30 @@ export function useCreateBooking() {
   })
 }
 
+export function useCheckInBooking() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => bookingsApi.checkIn(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+    },
+  })
+}
+
+export function useCheckOutBooking() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => bookingsApi.checkOut(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['rooms'] })
+    },
+  })
+}
+
 export function useUpdateBooking() {
   const queryClient = useQueryClient()
 
@@ -38,6 +62,18 @@ export function useUpdateBooking() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] })
       queryClient.invalidateQueries({ queryKey: ['rooms'] })
+    },
+  })
+}
+
+export function useUpdateBookingDetails() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateBookingDetailsRequest }) => bookingsApi.updateDetails(id, data),
+    onSuccess: (booking) => {
+      queryClient.invalidateQueries({ queryKey: ['bookings'] })
+      queryClient.invalidateQueries({ queryKey: ['bills', 'booking', booking.id] })
     },
   })
 }

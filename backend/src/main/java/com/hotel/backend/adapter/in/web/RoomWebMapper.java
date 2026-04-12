@@ -17,7 +17,7 @@ public final class RoomWebMapper {
         );
     }
 
-    private static RoomTypeResponse toRoomTypeResponse(RoomType roomType) {
+    public static RoomTypeResponse toRoomTypeResponse(RoomType roomType) {
         if (roomType == null) {
             return null;
         }
@@ -25,6 +25,7 @@ public final class RoomWebMapper {
         return new RoomTypeResponse(
                 roomType.id(),
                 roomType.name(),
+                roomType.description(),
                 roomType.price(),
                 roomType.capacity()
         );

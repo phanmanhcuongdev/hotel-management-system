@@ -21,7 +21,7 @@ public final class RoomMapper {
             return null;
         }
 
-        return new RoomType(entity.id, entity.name, entity.price, entity.capacity);
+        return new RoomType(entity.id, entity.name, entity.description, entity.price, entity.capacity);
     }
 
     public static RoomEntity toEntity(Room room) {

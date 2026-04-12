@@ -7,9 +7,10 @@ interface RoomTableProps {
   loading?: boolean
   onEdit: (room: Room) => void
   onChangeStatus: (room: Room) => void
+  onDelete: (room: Room) => void
 }
 
-export function RoomTable({ rooms, loading, onEdit, onChangeStatus }: RoomTableProps) {
+export function RoomTable({ rooms, loading, onEdit, onChangeStatus, onDelete }: RoomTableProps) {
   const getRoomTypeName = (room: Room) => room.type?.name ?? 'Unknown type'
   const getRoomCapacity = (room: Room) => room.type?.capacity ?? 0
   const getRoomPrice = (room: Room) => room.type?.price ?? 0
@@ -52,6 +53,9 @@ export function RoomTable({ rooms, loading, onEdit, onChangeStatus }: RoomTableP
           </Button>
           <Button variant="ghost" size="sm" onClick={() => onChangeStatus(room)}>
             Change Status
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onDelete(room)}>
+            Delete
           </Button>
         </div>
       ),

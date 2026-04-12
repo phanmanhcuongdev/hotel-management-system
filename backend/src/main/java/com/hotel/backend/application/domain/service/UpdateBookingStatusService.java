@@ -6,7 +6,9 @@ import com.hotel.backend.application.domain.model.Booking;
 import com.hotel.backend.application.domain.model.BookingStatus;
 import com.hotel.backend.application.domain.model.Room;
 import com.hotel.backend.application.domain.model.RoomStatus;
+import com.hotel.backend.application.port.in.GetBookingsQuery;
 import com.hotel.backend.application.port.in.UpdateBookingStatusUseCase;
+import com.hotel.backend.application.port.out.LoadBookedRoomPort;
 import com.hotel.backend.application.port.out.LoadBookingPort;
 import com.hotel.backend.application.port.out.LoadBookingsPort;
 import com.hotel.backend.application.port.out.LoadRoomPort;
@@ -32,6 +34,7 @@ public class UpdateBookingStatusService implements UpdateBookingStatusUseCase {
 
     private final LoadBookingPort loadBookingPort;
     private final LoadBookingsPort loadBookingsPort;
+    private final LoadBookedRoomPort loadBookedRoomPort;
     private final LoadRoomPort loadRoomPort;
     private final SaveBookingPort saveBookingPort;
     private final SaveRoomPort saveRoomPort;
@@ -41,6 +44,11 @@ public class UpdateBookingStatusService implements UpdateBookingStatusUseCase {
     public Booking updateStatus(Long bookingId, BookingStatus newStatus) {
         Booking booking = loadBookingPort.loadBookingById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        if (newStatus == BookingStatus.CANCELLED
+                && loadBookedRoomPort.loadByBookingId(bookingId).map(com.hotel.backend.application.domain.model.BookedRoom::checkedIn).orElse(false)) {
+            throw new BusinessConflictException("Checked-in bookings must use checkout instead of cancel");
+        }
 
         validateTransition(booking.status(), newStatus);
 
@@ -54,7 +62,13 @@ public class UpdateBookingStatusService implements UpdateBookingStatusUseCase {
                 booking.checkOut(),
                 newStatus,
                 booking.createdAt(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                booking.clientId(),
+                booking.discount(),
+                booking.note(),
+                booking.userId(),
+                booking.userUsername(),
+                booking.userFullName()
         );
 
         Booking savedBooking = saveBookingPort.save(updated);
@@ -69,7 +83,7 @@ public class UpdateBookingStatusService implements UpdateBookingStatusUseCase {
     private void validateTransition(BookingStatus current, BookingStatus next) {
         boolean valid = switch (current) {
             case PENDING -> next == BookingStatus.CONFIRMED || next == BookingStatus.CANCELLED;
-            case CONFIRMED -> next == BookingStatus.COMPLETED || next == BookingStatus.CANCELLED;
+            case CONFIRMED -> next == BookingStatus.CANCELLED;
             case CANCELLED, COMPLETED -> false;
         };
 
@@ -88,7 +102,15 @@ public class UpdateBookingStatusService implements UpdateBookingStatusUseCase {
         }
 
         LocalDate today = LocalDate.now();
-        boolean hasRemainingActiveBooking = loadBookingsPort.loadBookings(Optional.empty()).stream()
+        boolean hasRemainingActiveBooking = loadBookingsPort.loadBookings(new GetBookingsQuery(
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.of(booking.roomId()),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty()
+                )).stream()
                 .filter(existing -> !existing.id().equals(booking.id()))
                 .filter(existing -> existing.roomId().equals(booking.roomId()))
                 .filter(existing -> ACTIVE_BOOKING_STATUSES.contains(existing.status()))

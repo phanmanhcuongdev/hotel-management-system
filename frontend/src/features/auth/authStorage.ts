@@ -26,6 +26,23 @@ export function persistSession(session: AuthSession, remember: boolean) {
   targetStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
+export function replaceStoredSession(session: AuthSession) {
+  const hasLocalSession = !!safeParseSession(window.localStorage.getItem(SESSION_KEY))
+  const hasSessionSession = !!safeParseSession(window.sessionStorage.getItem(SESSION_KEY))
+
+  if (hasLocalSession) {
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    return
+  }
+
+  if (hasSessionSession) {
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    return
+  }
+
+  window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+}
+
 export function clearStoredSession() {
   window.localStorage.removeItem(SESSION_KEY)
   window.sessionStorage.removeItem(SESSION_KEY)

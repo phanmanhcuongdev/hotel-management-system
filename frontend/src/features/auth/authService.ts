@@ -1,5 +1,6 @@
-import { login as loginWithApi } from '../../api/authApi'
-import { clearStoredSession, loadStoredSession, persistSession } from './authStorage'
+import { getCurrentUser, login as loginWithApi, logout as logoutWithApi } from '../../api/authApi'
+import type { LoginApiResponse, MeApiResponse } from '../../api/authApi'
+import { clearStoredSession, loadStoredSession, persistSession, replaceStoredSession } from './authStorage'
 import type { AuthSession, LoginCredentials } from './types'
 
 const MOCK_AUTH_DELAY_MS = 700
@@ -28,27 +29,31 @@ function buildMockSession(username: string): AuthSession {
       id: 'demo-admin',
       name: 'Alex Nguyen',
       email: username.includes('@') ? username : 'admin@hotel.com',
-      role: 'Administrator',
+      role: 'ADMIN',
       initials: createInitials('Alex Nguyen'),
     },
   }
 }
 
-function normalizeApiSession(data: Awaited<ReturnType<typeof loginWithApi>>): AuthSession {
+function normalizeApiUser(user: MeApiResponse): AuthSession['user'] {
+  return {
+    id: String(user.id),
+    name: user.fullName,
+    email: user.username.includes('@') ? user.username : `${user.username}@hotel.local`,
+    role: user.position,
+    initials: createInitials(user.fullName),
+  }
+}
+
+function normalizeApiSession(data: LoginApiResponse): AuthSession {
   if (!data.token) {
-    throw new Error('Auth API không trả về token hợp lệ.')
+    throw new Error('Auth API did not return a valid token.')
   }
 
   return {
     token: data.token,
     mode: 'api',
-    user: {
-      id: String(data.user.id),
-      name: data.user.fullName,
-      email: data.user.username.includes('@') ? data.user.username : `${data.user.username}@hotel.local`,
-      role: data.user.position,
-      initials: createInitials(data.user.fullName),
-    },
+    user: normalizeApiUser(data.user),
   }
 }
 
@@ -58,7 +63,7 @@ async function loginWithMock(credentials: LoginCredentials) {
   const normalizedUsername = credentials.username.trim().toLowerCase()
 
   if (!['admin', 'admin@hotel.com'].includes(normalizedUsername) || credentials.password !== 'admin123') {
-    throw new Error('Sai tài khoản demo. Thử lại với admin / admin123.')
+    throw new Error('Invalid demo credentials. Try admin / admin123.')
   }
 
   return buildMockSession(normalizedUsername)
@@ -73,10 +78,42 @@ export async function loginUser(credentials: LoginCredentials) {
   return session
 }
 
-export function bootstrapSession() {
-  return loadStoredSession()
+export async function bootstrapSession() {
+  const storedSession = loadStoredSession()
+
+  if (!storedSession) {
+    return null
+  }
+
+  if (storedSession.mode === 'mock') {
+    return storedSession
+  }
+
+  try {
+    const currentUser = await getCurrentUser()
+    const refreshedSession: AuthSession = {
+      ...storedSession,
+      user: normalizeApiUser(currentUser),
+    }
+
+    replaceStoredSession(refreshedSession)
+    return refreshedSession
+  } catch {
+    clearStoredSession()
+    return null
+  }
 }
 
-export function logoutUser() {
+export async function logoutUser(session: AuthSession | null) {
+  try {
+    if (session?.mode === 'api') {
+      await logoutWithApi()
+    }
+  } finally {
+    clearStoredSession()
+  }
+}
+
+export function discardSession() {
   clearStoredSession()
 }

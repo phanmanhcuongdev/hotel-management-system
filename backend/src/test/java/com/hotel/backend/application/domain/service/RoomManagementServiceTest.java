@@ -1,15 +1,18 @@
 package com.hotel.backend.application.domain.service;
 
 import com.hotel.backend.application.domain.exception.BusinessConflictException;
+import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
 import com.hotel.backend.application.domain.model.Booking;
 import com.hotel.backend.application.domain.model.BookingStatus;
 import com.hotel.backend.application.domain.model.Room;
 import com.hotel.backend.application.domain.model.RoomStatus;
 import com.hotel.backend.application.domain.model.RoomType;
+import com.hotel.backend.application.port.out.DeleteRoomPort;
 import com.hotel.backend.application.port.out.LoadBookingsPort;
 import com.hotel.backend.application.port.out.LoadRoomPort;
 import com.hotel.backend.application.port.out.LoadRoomTypePort;
 import com.hotel.backend.application.port.out.SaveRoomPort;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +47,9 @@ class RoomManagementServiceTest {
     @Mock
     private LoadBookingsPort loadBookingsPort;
 
+    @Mock
+    private DeleteRoomPort deleteRoomPort;
+
     @InjectMocks
     private RoomManagementService roomManagementService;
 
@@ -61,23 +67,59 @@ class RoomManagementServiceTest {
                 LocalDate.now().plusDays(2),
                 BookingStatus.CONFIRMED,
                 LocalDateTime.now(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                null,
+                BigDecimal.ZERO,
+                null,
+                null,
+                null,
+                null
         );
 
         when(loadRoomPort.existsByRoomNumberAndIdNot("101", 101L)).thenReturn(false);
         when(loadRoomPort.loadRoomById(101L)).thenReturn(Optional.of(existingRoom));
-        when(loadBookingsPort.loadBookings(Optional.empty())).thenReturn(List.of(activeBooking));
+        when(loadBookingsPort.loadBookings(any())).thenReturn(List.of(activeBooking));
 
         assertThatThrownBy(() -> roomManagementService.updateRoom(101L, "101", targetStatus, 1L))
                 .isInstanceOf(BusinessConflictException.class)
-                .hasMessageContaining("Kh")
-                .hasMessageContaining("booking");
+                .hasMessageContaining("active booking");
 
         verify(loadRoomTypePort, never()).loadRoomTypeById(1L);
         verify(saveRoomPort, never()).saveRoom(any());
     }
 
+    @Test
+    void deleteRoomBlocksWhenRelatedBookingDataExists() {
+        when(loadRoomPort.loadRoomById(101L)).thenReturn(Optional.of(new Room(101L, "101", RoomStatus.AVAILABLE, roomType())));
+        when(deleteRoomPort.hasRelatedBookingData(101L)).thenReturn(true);
+
+        assertThatThrownBy(() -> roomManagementService.deleteRoom(101L))
+                .isInstanceOf(BusinessConflictException.class)
+                .hasMessageContaining("Room cannot be deleted");
+
+        verify(deleteRoomPort, never()).deleteRoomById(101L);
+    }
+
+    @Test
+    void deleteRoomDeletesWhenNoRelatedDataExists() {
+        when(loadRoomPort.loadRoomById(101L)).thenReturn(Optional.of(new Room(101L, "101", RoomStatus.AVAILABLE, roomType())));
+        when(deleteRoomPort.hasRelatedBookingData(101L)).thenReturn(false);
+
+        roomManagementService.deleteRoom(101L);
+
+        verify(deleteRoomPort).deleteRoomById(101L);
+    }
+
+    @Test
+    void deleteRoomThrowsWhenRoomNotFound() {
+        when(loadRoomPort.loadRoomById(101L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> roomManagementService.deleteRoom(101L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Room not found");
+    }
+
     private RoomType roomType() {
-        return new RoomType(1L, "Standard", BigDecimal.valueOf(100), 2);
+        return new RoomType(1L, "Standard", null, BigDecimal.valueOf(100), 2);
     }
 }

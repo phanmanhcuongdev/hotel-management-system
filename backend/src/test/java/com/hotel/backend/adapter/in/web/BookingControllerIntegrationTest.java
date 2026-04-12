@@ -3,9 +3,14 @@ package com.hotel.backend.adapter.in.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hotel.backend.application.domain.exception.BusinessConflictException;
 import com.hotel.backend.application.port.in.CreateBookingUseCase;
+import com.hotel.backend.application.port.in.CheckInBookingUseCase;
+import com.hotel.backend.application.port.in.CheckOutBookingUseCase;
+import com.hotel.backend.application.port.in.BookingWithRoom;
 import com.hotel.backend.application.port.in.GetBookingUseCase;
 import com.hotel.backend.application.port.in.GetBookingsUseCase;
+import com.hotel.backend.application.port.in.UpdateBookingDetailsUseCase;
 import com.hotel.backend.application.port.in.UpdateBookingStatusUseCase;
+import com.hotel.backend.application.port.out.LoadBookedRoomPort;
 import com.hotel.backend.adapter.out.security.JwtAuthenticationFilter;
 import com.hotel.backend.adapter.out.security.JwtTokenProvider;
 import com.hotel.backend.application.port.in.auth.LoadAuthenticatedUserUseCase;
@@ -19,6 +24,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,10 +64,65 @@ class BookingControllerIntegrationTest {
     private UpdateBookingStatusUseCase updateBookingStatusUseCase;
 
     @MockitoBean
+    private UpdateBookingDetailsUseCase updateBookingDetailsUseCase;
+
+    @MockitoBean
+    private CheckInBookingUseCase checkInBookingUseCase;
+
+    @MockitoBean
+    private CheckOutBookingUseCase checkOutBookingUseCase;
+
+    @MockitoBean
+    private LoadBookedRoomPort loadBookedRoomPort;
+
+    @MockitoBean
     private JwtTokenProvider jwtTokenProvider;
 
     @MockitoBean
     private LoadAuthenticatedUserUseCase loadAuthenticatedUserUseCase;
+
+    @Test
+    void getBookingsReturnsBookingList() throws Exception {
+        when(getBookingsUseCase.getAll(any())).thenReturn(List.of(
+                new BookingWithRoom(
+                        new com.hotel.backend.application.domain.model.Booking(
+                                1L,
+                                "Alice",
+                                "0123456789",
+                                "alice@example.com",
+                                101L,
+                                LocalDate.of(2026, 4, 20),
+                                LocalDate.of(2026, 4, 22),
+                                com.hotel.backend.application.domain.model.BookingStatus.CONFIRMED,
+                                LocalDateTime.of(2026, 4, 10, 9, 0),
+                                LocalDateTime.of(2026, 4, 10, 9, 0),
+                                5,
+                                BigDecimal.TEN,
+                                "Late arrival",
+                                1,
+                                "admin",
+                                "Admin User"
+                        ),
+                        new com.hotel.backend.application.domain.model.Room(
+                                101L,
+                                "101",
+                                com.hotel.backend.application.domain.model.RoomStatus.AVAILABLE,
+                                new com.hotel.backend.application.domain.model.RoomType(1L, "Standard", null, BigDecimal.valueOf(100), 2)
+                        )
+                )
+        ));
+        when(loadBookedRoomPort.loadByBookingId(1L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/bookings")
+                        .with(user("admin").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].guestName").value("Alice"))
+                .andExpect(jsonPath("$[0].clientId").value(5))
+                .andExpect(jsonPath("$[0].discount").value(10))
+                .andExpect(jsonPath("$[0].bookedBy.username").value("admin"))
+                .andExpect(jsonPath("$[0].room.roomNumber").value("101"));
+    }
 
     @Test
     void postBookingsOverlapReturnsConflict() throws Exception {
@@ -104,12 +168,14 @@ class BookingControllerIntegrationTest {
             String guestName,
             String phoneNumber,
             String email,
+            String discount,
+            String note,
             Long roomId,
             String checkIn,
             String checkOut
     ) {
         private CreateBookingBody() {
-            this("Alice", "0123456789", "alice@example.com", 101L, "2026-04-20", "2026-04-22");
+            this("Alice", "0123456789", "alice@example.com", "0", null, 101L, "2026-04-20", "2026-04-22");
         }
     }
 }

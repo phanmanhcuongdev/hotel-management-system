@@ -3,6 +3,7 @@ export type RoomStatus = 'AVAILABLE' | 'OCCUPIED' | 'MAINTENANCE'
 export interface RoomType {
   id: number
   name: string
+  description?: string
   price: number
   capacity: number
 }

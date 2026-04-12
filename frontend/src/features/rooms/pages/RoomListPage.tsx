@@ -1,15 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui'
 import { useAuth } from '../../auth/useAuth'
-import type { CreateRoomRequest, Room, RoomStatus, RoomType } from '../../../types'
+import type { CreateRoomRequest, Room, RoomStatus } from '../../../types'
 import { ChangeStatusModal, RoomFormModal, RoomGridView, RoomStatusTabs, RoomTable } from '../components'
-import { useCreateRoom, useRooms, useUpdateRoom } from '../hooks/useRooms'
+import { useCreateRoom, useDeleteRoom, useRooms, useUpdateRoom } from '../hooks/useRooms'
+import { useRoomTypes } from '../../room-types/hooks/useRoomTypes'
 
 type FilterType = 'booking' | 'type' | 'floor' | 'room'
 type ViewMode = 'grid' | 'list'
 type StatusFilter = 'all' | 'available' | 'reserved' | 'checkin' | 'occupied' | 'checkout' | 'dirty'
 
 export default function RoomListPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const isAdmin = user?.role?.trim().toUpperCase() === 'ADMIN'
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -19,62 +22,47 @@ export default function RoomListPage() {
   const [isFormModalOpen, setFormModalOpen] = useState(false)
   const [isStatusModalOpen, setStatusModalOpen] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
+  const deferredSearchValue = useDeferredValue(searchValue.trim())
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
 
-  const { data: rooms = [], isLoading, error: roomsError } = useRooms(undefined, { enabled: isAdmin })
+  const roomStatusFilter = statusFilter === 'available' ? 'AVAILABLE' : statusFilter === 'occupied' ? 'OCCUPIED' : statusFilter === 'dirty' ? 'MAINTENANCE' : undefined
+  const { data: rooms = [], isLoading, error: roomsError } = useRooms(
+    {
+      keyword: deferredSearchValue || undefined,
+      status: roomStatusFilter,
+    },
+    { enabled: isAdmin },
+  )
+  const { data: allRooms = [], error: allRoomsError } = useRooms(undefined, { enabled: isAdmin })
+  const { data: roomTypes = [], error: roomTypesError } = useRoomTypes(undefined, { enabled: isAdmin })
   const createRoom = useCreateRoom()
   const updateRoom = useUpdateRoom()
-
-  const roomTypes = useMemo<RoomType[]>(() => {
-    const byId = new Map<number, RoomType>()
-
-    rooms.forEach((room) => {
-      if (!byId.has(room.type.id)) {
-        byId.set(room.type.id, room.type)
-      }
-    })
-
-    if (selectedRoom && !byId.has(selectedRoom.type.id)) {
-      byId.set(selectedRoom.type.id, selectedRoom.type)
-    }
-
-    return Array.from(byId.values())
-  }, [rooms, selectedRoom])
+  const deleteRoom = useDeleteRoom()
 
   const statusCounts = useMemo(() => {
-    const counts = { all: rooms.length, available: 0, reserved: 0, checkin: 0, occupied: 0, checkout: 0, dirty: 0 }
-    rooms.forEach((room) => {
+    const counts = { all: allRooms.length, available: 0, reserved: 0, checkin: 0, occupied: 0, checkout: 0, dirty: 0 }
+    allRooms.forEach((room) => {
       if (room.status === 'AVAILABLE') counts.available++
       else if (room.status === 'OCCUPIED') counts.occupied++
       else if (room.status === 'MAINTENANCE') counts.dirty++
     })
     return counts
-  }, [rooms])
+  }, [allRooms])
 
   const statusTabs = [
-    { key: 'all', label: 'Tất cả', count: statusCounts.all, color: 'text-slate-600' },
-    { key: 'available', label: 'Sẵn sàng', count: statusCounts.available, color: 'text-emerald-600' },
-    { key: 'occupied', label: 'Đang ở', count: statusCounts.occupied, color: 'text-rose-600' },
-    { key: 'dirty', label: 'Bảo trì', count: statusCounts.dirty, color: 'text-slate-400' },
+    { key: 'all', label: 'All', count: statusCounts.all, color: 'text-slate-600' },
+    { key: 'available', label: 'Available', count: statusCounts.available, color: 'text-emerald-600' },
+    { key: 'occupied', label: 'Occupied', count: statusCounts.occupied, color: 'text-rose-600' },
+    { key: 'dirty', label: 'Maintenance', count: statusCounts.dirty, color: 'text-slate-400' },
   ]
 
-  const filteredRooms = useMemo(() => {
-    let result = rooms
-
-    if (statusFilter === 'available') result = result.filter((room) => room.status === 'AVAILABLE')
-    else if (statusFilter === 'occupied') result = result.filter((room) => room.status === 'OCCUPIED')
-    else if (statusFilter === 'dirty') result = result.filter((room) => room.status === 'MAINTENANCE')
-
-    if (searchValue) {
-      result = result.filter((room) => room.roomNumber.toLowerCase().includes(searchValue.toLowerCase()))
-    }
-
-    return result
-  }, [rooms, searchValue, statusFilter])
-
   const pageErrorMessage =
+    (allRoomsError instanceof Error && allRoomsError.message) ||
     (roomsError instanceof Error && roomsError.message) ||
+    (roomTypesError instanceof Error && roomTypesError.message) ||
     (createRoom.error instanceof Error && createRoom.error.message) ||
     (updateRoom.error instanceof Error && updateRoom.error.message) ||
+    (deleteRoom.error instanceof Error && deleteRoom.error.message) ||
     null
 
   const openCreateModal = () => {
@@ -118,8 +106,9 @@ export default function RoomListPage() {
           onSuccess: () => {
             setFormModalOpen(false)
             setSelectedRoom(null)
+            setFeedbackMessage(`Room ${payload.roomNumber} updated successfully.`)
           },
-        }
+        },
       )
       return
     }
@@ -127,6 +116,7 @@ export default function RoomListPage() {
     createRoom.mutate(payload, {
       onSuccess: () => {
         setFormModalOpen(false)
+        setFeedbackMessage(`Room ${payload.roomNumber} created successfully.`)
       },
     })
   }
@@ -149,17 +139,32 @@ export default function RoomListPage() {
         onSuccess: () => {
           setStatusModalOpen(false)
           setSelectedRoom(null)
+          setFeedbackMessage(`Room ${selectedRoom.roomNumber} status updated.`)
         },
-      }
+      },
     )
   }
 
-  const isRoomMutationPending = createRoom.isPending || updateRoom.isPending
+  const handleDeleteRoom = (room: Room) => {
+    if (!isAdmin) {
+      return
+    }
+
+    if (confirm(`Delete room ${room.roomNumber}? This only works when the room has no booking or stay history.`)) {
+      deleteRoom.mutate(room.id, {
+        onSuccess: () => {
+          setFeedbackMessage(`Room ${room.roomNumber} deleted successfully.`)
+        },
+      })
+    }
+  }
+
+  const isRoomMutationPending = createRoom.isPending || updateRoom.isPending || deleteRoom.isPending
 
   if (!isAdmin) {
     return (
       <div className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-5 text-sm text-amber-900">
-        Ban khong co quyen truy cap khu vuc quan ly phong. Backend hien chi cho phep tai khoan ADMIN xem va cap nhat du lieu nay.
+        You do not have access to room management. Only ADMIN accounts can view and update this data.
       </div>
     )
   }
@@ -168,8 +173,8 @@ export default function RoomListPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-black italic uppercase tracking-tight text-slate-900">Sơ đồ phòng nghỉ</h1>
-          <p className="mt-1 font-medium text-slate-500">Theo dõi và vận hành trạng thái phòng theo thời gian thực.</p>
+          <h1 className="text-3xl font-black italic uppercase tracking-tight text-slate-900">Room Operations</h1>
+          <p className="mt-1 font-medium text-slate-500">Monitor inventory and manage room status in real time.</p>
         </div>
 
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-1.5 shadow-sm">
@@ -198,6 +203,12 @@ export default function RoomListPage() {
         </div>
       )}
 
+      {feedbackMessage && (
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
+          {feedbackMessage}
+        </div>
+      )}
+
       <div className="space-y-6">
         <div className="flex flex-col items-stretch gap-4 xl:flex-row xl:items-center">
           <div className="flex-1 overflow-x-auto rounded-[2rem] border border-slate-100 bg-white p-2 shadow-sm no-scrollbar">
@@ -208,7 +219,7 @@ export default function RoomListPage() {
             <span className="material-symbols-outlined text-slate-400 transition-colors group-focus-within:text-primary-600">search</span>
             <input
               type="text"
-              placeholder="Tìm số phòng..."
+              placeholder="Search rooms..."
               className="w-full border-none bg-transparent px-3 py-3 text-sm font-bold text-slate-900 outline-none placeholder:text-slate-300"
               value={searchValue}
               onChange={(event) => setSearchValue(event.target.value)}
@@ -217,21 +228,24 @@ export default function RoomListPage() {
 
           <Button onClick={openCreateModal} className="rounded-2xl bg-slate-900 px-6 py-6 shadow-xl shadow-slate-200">
             <span className="material-symbols-outlined mr-2">add</span>
-            Thêm phòng
+            Add Room
+          </Button>
+          <Button variant="secondary" onClick={() => navigate('/room-types')} className="rounded-2xl px-6 py-6">
+            Manage Types
           </Button>
         </div>
 
         <div className="min-h-[400px]">
           {viewMode === 'grid' ? (
             <RoomGridView
-              rooms={filteredRooms}
+              rooms={rooms}
               loading={isLoading}
               groupBy={activeFilter === 'floor' ? 'floor' : 'type'}
               onRoomClick={handleRoomClick}
             />
           ) : (
             <div className="overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-sm">
-              <RoomTable rooms={filteredRooms} loading={isLoading} onEdit={openEditModal} onChangeStatus={handleRoomClick} />
+              <RoomTable rooms={rooms} loading={isLoading} onEdit={openEditModal} onChangeStatus={handleRoomClick} onDelete={handleDeleteRoom} />
             </div>
           )}
         </div>

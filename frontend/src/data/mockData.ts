@@ -37,13 +37,13 @@ export const mockBookings: Record<number, { guestName: string; checkIn: string; 
 }
 
 export const mockBookingsList: Booking[] = [
-  { id: 1, guestName: 'John Smith', phoneNumber: '0901000001', room: { id: 1, roomNumber: '101' }, checkIn: '2024-02-20', checkOut: '2024-02-24', status: 'CONFIRMED' },
-  { id: 2, guestName: 'Emily Johnson', phoneNumber: '0901000002', room: { id: 3, roomNumber: '103' }, checkIn: '2024-02-22', checkOut: '2024-02-25', status: 'CONFIRMED' },
-  { id: 3, guestName: 'Michael Brown', phoneNumber: '0901000003', room: { id: 7, roomNumber: '201' }, checkIn: '2024-02-21', checkOut: '2024-02-23', status: 'CONFIRMED' },
-  { id: 4, guestName: 'Sarah Williams', phoneNumber: '0901000004', room: { id: 9, roomNumber: '203' }, checkIn: '2024-02-19', checkOut: '2024-02-26', status: 'CONFIRMED' },
-  { id: 5, guestName: 'David Lee', phoneNumber: '0901000005', room: { id: 12, roomNumber: '206' }, checkIn: '2024-02-23', checkOut: '2024-02-27', status: 'PENDING' },
-  { id: 6, guestName: 'Jennifer Davis', phoneNumber: '0901000006', room: { id: 14, roomNumber: '302' }, checkIn: '2024-02-20', checkOut: '2024-02-22', status: 'COMPLETED' },
-  { id: 7, guestName: 'Robert Wilson', phoneNumber: '0901000007', room: { id: 18, roomNumber: '306' }, checkIn: '2024-02-24', checkOut: '2024-02-25', status: 'PENDING' },
-  { id: 8, guestName: 'Alice Chen', phoneNumber: '0901000008', room: { id: 2, roomNumber: '102' }, checkIn: '2024-02-28', checkOut: '2024-03-02', status: 'PENDING' },
-  { id: 9, guestName: 'Bob Taylor', phoneNumber: '0901000009', room: { id: 4, roomNumber: '104' }, checkIn: '2024-02-25', checkOut: '2024-02-27', status: 'CANCELLED' },
+  { id: 1, guestName: 'John Smith', phoneNumber: '0901000001', discount: 0, note: null, bookedBy: null, room: { id: 1, roomNumber: '101' }, checkIn: '2024-02-20', checkOut: '2024-02-24', status: 'CONFIRMED', checkedIn: true },
+  { id: 2, guestName: 'Emily Johnson', phoneNumber: '0901000002', discount: 0, note: null, bookedBy: null, room: { id: 3, roomNumber: '103' }, checkIn: '2024-02-22', checkOut: '2024-02-25', status: 'CONFIRMED', checkedIn: true },
+  { id: 3, guestName: 'Michael Brown', phoneNumber: '0901000003', discount: 0, note: null, bookedBy: null, room: { id: 7, roomNumber: '201' }, checkIn: '2024-02-21', checkOut: '2024-02-23', status: 'CONFIRMED', checkedIn: false },
+  { id: 4, guestName: 'Sarah Williams', phoneNumber: '0901000004', discount: 0, note: null, bookedBy: null, room: { id: 9, roomNumber: '203' }, checkIn: '2024-02-19', checkOut: '2024-02-26', status: 'CONFIRMED', checkedIn: false },
+  { id: 5, guestName: 'David Lee', phoneNumber: '0901000005', discount: 0, note: null, bookedBy: null, room: { id: 12, roomNumber: '206' }, checkIn: '2024-02-23', checkOut: '2024-02-27', status: 'PENDING', checkedIn: false },
+  { id: 6, guestName: 'Jennifer Davis', phoneNumber: '0901000006', discount: 0, note: null, bookedBy: null, room: { id: 14, roomNumber: '302' }, checkIn: '2024-02-20', checkOut: '2024-02-22', status: 'COMPLETED', checkedIn: false },
+  { id: 7, guestName: 'Robert Wilson', phoneNumber: '0901000007', discount: 0, note: null, bookedBy: null, room: { id: 18, roomNumber: '306' }, checkIn: '2024-02-24', checkOut: '2024-02-25', status: 'PENDING', checkedIn: false },
+  { id: 8, guestName: 'Alice Chen', phoneNumber: '0901000008', discount: 0, note: null, bookedBy: null, room: { id: 2, roomNumber: '102' }, checkIn: '2024-02-28', checkOut: '2024-03-02', status: 'PENDING', checkedIn: false },
+  { id: 9, guestName: 'Bob Taylor', phoneNumber: '0901000009', discount: 0, note: null, bookedBy: null, room: { id: 4, roomNumber: '104' }, checkIn: '2024-02-25', checkOut: '2024-02-27', status: 'CANCELLED', checkedIn: false },
 ]
