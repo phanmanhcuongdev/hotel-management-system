@@ -1,15 +1,43 @@
 import { apiClient } from './client'
-import type { Room, RoomStatus, CreateRoomRequest, UpdateRoomRequest } from '../types'
+import type { CreateRoomRequest, Room, RoomStatus, UpdateRoomRequest } from '../types'
+
+export interface RoomsSearchParams {
+  keyword?: string
+  status?: RoomStatus
+  typeId?: number
+}
+
+export interface AvailableRoomsSearchParams {
+  checkIn: string
+  checkOut: string
+  keyword?: string
+  typeId?: number
+}
 
 export const roomsApi = {
-  getAll: async (status?: RoomStatus): Promise<Room[]> => {
-    const params = status ? { status } : {}
+  getAll: async (filters?: RoomsSearchParams): Promise<Room[]> => {
+    const params = {
+      keyword: filters?.keyword || undefined,
+      status: filters?.status || undefined,
+      typeId: filters?.typeId || undefined,
+    }
     const response = await apiClient.get<Room[]>('/rooms', { params })
     return response.data
   },
 
   getById: async (id: number): Promise<Room> => {
     const response = await apiClient.get<Room>(`/rooms/${id}`)
+    return response.data
+  },
+
+  getAvailable: async (filters: AvailableRoomsSearchParams): Promise<Room[]> => {
+    const params = {
+      checkIn: filters.checkIn,
+      checkOut: filters.checkOut,
+      keyword: filters.keyword || undefined,
+      typeId: filters.typeId || undefined,
+    }
+    const response = await apiClient.get<Room[]>('/rooms/available', { params })
     return response.data
   },
 

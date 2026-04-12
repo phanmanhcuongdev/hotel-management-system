@@ -21,4 +21,20 @@ public class UserMapper {
                 userEntity.getDescription()
         );
     }
+
+    public UserEntity mapToJpaEntity(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        UserEntity entity = new UserEntity();
+        entity.setId(user.getId());
+        entity.setUsername(user.getUsername());
+        entity.setPassword(user.getPassword());
+        entity.setFullName(user.getFullName());
+        entity.setPosition(user.getPosition());
+        entity.setMail(user.getMail());
+        entity.setDescription(user.getDescription());
+        return entity;
+    }
 }

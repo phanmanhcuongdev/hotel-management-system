@@ -7,17 +7,35 @@ import com.hotel.backend.application.domain.model.RoomType;
 public final class RoomMapper {
     private RoomMapper() {}
 
-    public static Room toDomain(RoomJpaEntity e) {
+    public static Room toDomain(RoomEntity entity) {
         return new Room(
-                e.id,
-                e.roomNumber,
-                RoomStatus.valueOf(e.status),
-                new RoomType(
-                        e.roomType.id,
-                        e.roomType.name,
-                        e.roomType.price,
-                        e.roomType.capacity
-                )
+                entity.id,
+                entity.roomNumber,
+                RoomStatus.valueOf(entity.status),
+                toDomain(entity.roomType)
         );
+    }
+
+    public static RoomType toDomain(RoomTypeEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return new RoomType(entity.id, entity.name, entity.description, entity.price, entity.capacity);
+    }
+
+    public static RoomEntity toEntity(Room room) {
+        RoomEntity entity = new RoomEntity();
+        entity.id = room.id();
+        entity.roomNumber = room.roomNumber();
+        entity.status = room.status().name();
+
+        if (room.type() != null) {
+            RoomTypeEntity roomTypeEntity = new RoomTypeEntity();
+            roomTypeEntity.id = room.type().id();
+            entity.roomType = roomTypeEntity;
+        }
+
+        return entity;
     }
 }

@@ -1,7 +1,11 @@
 package com.hotel.backend.adapter.out.persistence.booking;
 
+import com.hotel.backend.adapter.out.persistence.client.ClientEntity;
+import com.hotel.backend.adapter.out.persistence.room.RoomEntity;
+import com.hotel.backend.adapter.out.persistence.user.UserEntity;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -24,6 +28,10 @@ public class BookingJpaEntity {
     @Column(name = "room_id", nullable = false)
     public Long roomId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", insertable = false, updatable = false)
+    public RoomEntity room;
+
     @Column(name = "check_in", nullable = false)
     public LocalDate checkIn;
 
@@ -38,4 +46,18 @@ public class BookingJpaEntity {
 
     @Column(name = "updated_at", nullable = false)
     public LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id")
+    public ClientEntity client;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    public UserEntity user;
+
+    @Column(nullable = false, precision = 15, scale = 2)
+    public BigDecimal discount = BigDecimal.ZERO;
+
+    @Column(length = 500)
+    public String note;
 }

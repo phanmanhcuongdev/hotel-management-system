@@ -4,4 +4,6 @@ import com.hotel.backend.application.domain.model.Booking;
 
 public interface SaveBookingPort {
     Booking save(Booking booking);
+
+    Booking save(Booking booking, Integer clientId);
 }

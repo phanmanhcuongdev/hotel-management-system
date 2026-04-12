@@ -1,7 +1,11 @@
 package com.hotel.backend.adapter.in.web;
 
 import com.hotel.backend.adapter.in.web.dto.ApiErrorResponse;
+import com.hotel.backend.application.domain.exception.BusinessConflictException;
 import com.hotel.backend.application.domain.exception.InvalidCredentialsException;
+import com.hotel.backend.application.domain.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +18,8 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(InvalidCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
@@ -33,6 +39,24 @@ public class GlobalExceptionHandler {
         return new ApiErrorResponse("VALIDATION_ERROR", "Request validation failed", details);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleNotFound(ResourceNotFoundException ex) {
+        return new ApiErrorResponse("NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(BusinessConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleBusinessConflict(BusinessConflictException ex) {
+        return new ApiErrorResponse("BUSINESS_CONFLICT", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleIllegalArgument(IllegalArgumentException ex) {
+        return new ApiErrorResponse("BAD_REQUEST", ex.getMessage());
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorResponse handleMalformedJson(HttpMessageNotReadableException ex) {
@@ -48,6 +72,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiErrorResponse handleUnexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
         return new ApiErrorResponse("INTERNAL_SERVER_ERROR", "An unexpected error occurred");
     }
 }

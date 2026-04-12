@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Modal, Select, Button } from '../../../components/ui'
 import type { Booking, BookingStatus } from '../../../types'
 
@@ -10,19 +10,43 @@ interface UpdateStatusModalProps {
   loading?: boolean
 }
 
-const statusOptions = [
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'CONFIRMED', label: 'Confirmed' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
-]
+const TRANSITION_OPTIONS: Record<BookingStatus, { value: BookingStatus; label: string }[]> = {
+  PENDING: [
+    { value: 'CONFIRMED', label: 'Confirmed' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+  ],
+  CONFIRMED: [
+    { value: 'CANCELLED', label: 'Cancelled' },
+  ],
+  CANCELLED: [],
+  COMPLETED: [],
+}
 
 export function UpdateStatusModal({ isOpen, onClose, onSubmit, booking, loading }: UpdateStatusModalProps) {
-  const [status, setStatus] = useState<BookingStatus>(booking?.status || 'PENDING')
+  const [status, setStatus] = useState<BookingStatus>('CONFIRMED')
+
+  const statusOptions = useMemo(() => {
+    if (!booking) {
+      return []
+    }
+
+    return TRANSITION_OPTIONS[booking.status]
+  }, [booking])
+
+  useEffect(() => {
+    if (!booking) {
+      return
+    }
+
+    const nextStatus = TRANSITION_OPTIONS[booking.status][0]?.value ?? booking.status
+    setStatus(nextStatus)
+  }, [booking])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(status)
+    if (statusOptions.length > 0) {
+      onSubmit(status)
+    }
   }
 
   if (!booking) return null
@@ -30,19 +54,25 @@ export function UpdateStatusModal({ isOpen, onClose, onSubmit, booking, loading 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Update Booking #${booking.id}`} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Select
-          id="status"
-          label="New Status"
-          options={statusOptions}
-          value={status}
-          onChange={(e) => setStatus(e.target.value as BookingStatus)}
-        />
+        {statusOptions.length > 0 ? (
+          <Select
+            id="status"
+            label="New Status"
+            options={statusOptions}
+            value={status}
+            onChange={(e) => setStatus(e.target.value as BookingStatus)}
+          />
+        ) : (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            This booking no longer has a valid status transition.
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={loading}>
+          <Button type="submit" loading={loading} disabled={statusOptions.length === 0}>
             Update Status
           </Button>
         </div>

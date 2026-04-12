@@ -6,11 +6,14 @@ interface BookingTableProps {
   bookings: Booking[]
   loading?: boolean
   onViewDetails: (booking: Booking) => void
+  onEditDetails: (booking: Booking) => void
   onUpdateStatus: (booking: Booking) => void
   onCancel: (booking: Booking) => void
+  onCheckIn: (booking: Booking) => void
+  onCheckOut: (booking: Booking) => void
 }
 
-export function BookingTable({ bookings, loading, onViewDetails, onUpdateStatus, onCancel }: BookingTableProps) {
+export function BookingTable({ bookings, loading, onViewDetails, onEditDetails, onUpdateStatus, onCancel, onCheckIn, onCheckOut }: BookingTableProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -23,19 +26,22 @@ export function BookingTable({ bookings, loading, onViewDetails, onUpdateStatus,
     {
       key: 'id',
       header: 'Booking ID',
-      render: (booking: Booking) => (
-        <span className="font-medium">#{booking.id}</span>
-      ),
+      render: (booking: Booking) => <span className="font-medium">#{booking.id}</span>,
     },
     {
       key: 'room',
       header: 'Room',
-      render: (booking: Booking) => booking.room?.roomNumber ?? '—',
+      render: (booking: Booking) => booking.room?.roomNumber ?? '-',
     },
     {
       key: 'guestName',
       header: 'Guest',
       render: (booking: Booking) => booking.guestName,
+    },
+    {
+      key: 'discount',
+      header: 'Discount',
+      render: (booking: Booking) => `$${booking.discount.toLocaleString()}`,
     },
     {
       key: 'checkIn',
@@ -60,28 +66,40 @@ export function BookingTable({ bookings, loading, onViewDetails, onUpdateStatus,
           <Button variant="ghost" size="sm" onClick={() => onViewDetails(booking)}>
             Details
           </Button>
-          {booking.status !== 'CANCELLED' && booking.status !== 'COMPLETED' && (
+          {(booking.status === 'PENDING' || booking.status === 'CONFIRMED') && (
+            <Button variant="ghost" size="sm" onClick={() => onEditDetails(booking)}>
+              Edit
+            </Button>
+          )}
+          {booking.status === 'PENDING' && (
             <>
               <Button variant="ghost" size="sm" onClick={() => onUpdateStatus(booking)}>
-                Update
+                Status
               </Button>
               <Button variant="ghost" size="sm" onClick={() => onCancel(booking)}>
                 Cancel
               </Button>
             </>
           )}
+          {booking.status === 'CONFIRMED' && !booking.checkedIn && (
+            <>
+              <Button variant="ghost" size="sm" onClick={() => onCheckIn(booking)}>
+                Check-in
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onCancel(booking)}>
+                Cancel
+              </Button>
+            </>
+          )}
+          {booking.status === 'CONFIRMED' && booking.checkedIn && (
+            <Button variant="ghost" size="sm" onClick={() => onCheckOut(booking)}>
+              Checkout
+            </Button>
+          )}
         </div>
       ),
     },
   ]
 
-  return (
-    <Table
-      columns={columns}
-      data={bookings}
-      keyExtractor={(booking) => booking.id}
-      loading={loading}
-      emptyMessage="No bookings found"
-    />
-  )
+  return <Table columns={columns} data={bookings} keyExtractor={(booking) => booking.id} loading={loading} emptyMessage="No bookings found" />
 }
