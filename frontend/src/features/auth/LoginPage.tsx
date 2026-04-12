@@ -8,8 +8,8 @@ import { MOCK_AUTH_ENABLED } from './authService'
 import { useAuth } from './useAuth'
 
 const loginSchema = z.object({
-  username: z.string().trim().min(1, 'Vui lòng nhập email hoặc username'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
+  username: z.string().trim().min(1, 'Please enter an email or username'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
   remember: z.boolean().default(true),
 })
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
       await login(values)
       navigate(redirectTo, { replace: true })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Đăng nhập thất bại. Vui lòng thử lại.'
+      const message = error instanceof Error ? error.message : 'Login failed. Please try again.'
       setSubmitError(message)
     }
   })
@@ -78,10 +78,10 @@ export default function LoginPage() {
 
           <div className="max-w-md">
             <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-white">
-              Vận hành <span className="text-primary-400">thông minh</span>, dịch vụ <span className="text-primary-400">đẳng cấp</span>.
+              Run operations <span className="text-primary-400">smoothly</span>, deliver service <span className="text-primary-400">confidently</span>.
             </h1>
             <p className="mt-6 text-lg text-slate-300">
-              Hệ thống quản lý khách sạn hiện đại giúp tối ưu quy trình đặt phòng, quản lý buồng phòng và nâng tầm trải nghiệm khách hàng.
+              Modern hotel back-office software for bookings, room operations, guest records, billing, and day-to-day staff workflows.
             </p>
           </div>
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
               ))}
             </div>
             <p className="text-sm font-medium text-slate-300">
-              Hơn <span className="font-bold text-white">500+</span> nhân viên đã tin dùng hệ thống.
+              More than <span className="font-bold text-white">500+</span> staff members rely on this workflow.
             </p>
           </div>
         </div>
@@ -115,8 +115,8 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-10">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Chào mừng trở lại</h2>
-            <p className="mt-3 text-slate-500">Vui lòng nhập thông tin để truy cập vào hệ thống quản trị.</p>
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Welcome back</h2>
+            <p className="mt-3 text-slate-500">Sign in to access the hotel operations workspace.</p>
           </div>
 
           {submitError && (
@@ -129,7 +129,7 @@ export default function LoginPage() {
           <form className="space-y-6" onSubmit={onSubmit} noValidate>
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-semibold text-slate-700">
-                Email hoặc tên đăng nhập
+                Email or Username
               </label>
               <div className="group relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-slate-400 transition-colors group-focus-within:text-primary-600">
@@ -140,7 +140,7 @@ export default function LoginPage() {
                   type="text"
                   autoComplete="username"
                   className="block w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-primary-600 focus:ring-4 focus:ring-primary-100"
-                  placeholder="admin hoặc admin@hotel.com"
+                  placeholder="admin or admin@hotel.com"
                   {...register('username')}
                 />
               </div>
@@ -150,10 +150,10 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="text-sm font-semibold text-slate-700">
-                  Mật khẩu
+                  Password
                 </label>
                 <button type="button" className="text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700">
-                  Quên mật khẩu?
+                  Forgot password?
                 </button>
               </div>
               <div className="group relative">
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 {...register('remember')}
               />
               <label htmlFor="remember" className="ml-3 cursor-pointer select-none text-sm font-medium text-slate-600">
-                Ghi nhớ đăng nhập
+                Remember this device
               </label>
             </div>
 
@@ -196,7 +196,7 @@ export default function LoginPage() {
               className="w-full rounded-xl bg-primary-600 py-6 text-base font-bold text-white shadow-xl shadow-primary-200 transition-all hover:bg-primary-700 hover:shadow-primary-300 active:scale-[0.98]"
               loading={isSubmitting}
             >
-              Đăng nhập ngay
+              Sign In
             </Button>
 
             {MOCK_AUTH_ENABLED && (
@@ -207,11 +207,11 @@ export default function LoginPage() {
                 </div>
                 <div className="space-y-1.5 text-sm">
                   <p className="flex justify-between text-slate-600">
-                    <span>Tài khoản:</span>
+                    <span>Username:</span>
                     <span className="font-mono font-semibold text-slate-900">admin</span>
                   </p>
                   <p className="flex justify-between text-slate-600">
-                    <span>Mật khẩu:</span>
+                    <span>Password:</span>
                     <span className="font-mono font-semibold text-slate-900">admin123</span>
                   </p>
                 </div>

@@ -7,10 +7,14 @@ function booking(status: Booking['status']): Booking {
     id: 1,
     guestName: 'Alice',
     phoneNumber: '0123456789',
+    discount: 0,
+    note: null,
+    bookedBy: null,
     room: { id: 101, roomNumber: '101', type: { id: 1, name: 'Standard' } },
     checkIn: '2026-04-20',
     checkOut: '2026-04-22',
     status,
+    checkedIn: false,
   }
 }
 
@@ -53,8 +57,8 @@ describe('UpdateStatusModal', () => {
       />
     )
 
-    expect(screen.getByRole('option', { name: 'Completed' })).toBeInTheDocument()
+    expect(screen.getByRole('option', { name: 'Cancelled' })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: 'Confirmed' })).not.toBeInTheDocument()
-    expect(screen.getByDisplayValue('Completed')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Cancelled')).toBeInTheDocument()
   })
 })

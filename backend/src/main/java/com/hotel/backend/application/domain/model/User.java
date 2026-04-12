@@ -1,10 +1,5 @@
 package com.hotel.backend.application.domain.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
-@Data
-@AllArgsConstructor
 public class User {
 
     private Integer id;
@@ -14,4 +9,42 @@ public class User {
     private String position;
     private String mail;
     private String description;
+
+    public User(Integer id, String username, String password, String fullName, String position, String mail, String description) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.position = position;
+        this.mail = mail;
+        this.description = description;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public String getMail() {
+        return mail;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

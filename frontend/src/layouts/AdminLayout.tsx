@@ -4,8 +4,16 @@ import { useAuth } from '../features/auth/useAuth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
-  { name: 'Phòng nghỉ', href: '/rooms', icon: 'bed' },
-  { name: 'Đặt phòng', href: '/bookings', icon: 'book_online' },
+  { name: 'Rooms', href: '/rooms', icon: 'bed' },
+  { name: 'Room Types', href: '/room-types', icon: 'hotel_class' },
+  { name: 'Bookings', href: '/bookings', icon: 'book_online' },
+  { name: 'Services', href: '/services', icon: 'room_service' },
+  { name: 'Clients', href: '/clients', icon: 'badge' },
+  { name: 'Property', href: '/property', icon: 'apartment' },
+  { name: 'Billing', href: '/billing', icon: 'receipt_long' },
+  { name: 'Reports', href: '/reports', icon: 'monitoring' },
+  { name: 'Users', href: '/users', icon: 'group' },
+  { name: 'Change Password', href: '/change-password', icon: 'lock_reset' },
 ]
 
 export default function AdminLayout() {
@@ -22,7 +30,6 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-sans text-slate-900">
-      {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm lg:hidden"
@@ -30,7 +37,6 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-slate-900 text-white transition-all duration-300 lg:static lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
@@ -40,11 +46,13 @@ export default function AdminLayout() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600 shadow-lg shadow-primary-500/20">
             <span className="material-symbols-outlined text-[24px]">apartment</span>
           </div>
-          <span className="text-xl font-bold tracking-tight">Grand <span className="text-primary-400">Hub</span></span>
+          <span className="text-xl font-bold tracking-tight">
+            Grand Hotel <span className="text-primary-400">Hub</span>
+          </span>
         </div>
 
         <div className="mt-4 flex-1 px-4 py-4">
-          <p className="mb-4 px-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Menu quản trị</p>
+          <p className="mb-4 px-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500">Admin Menu</p>
           <nav className="space-y-1.5">
             {navigation.map((item) => (
               <NavLink
@@ -59,9 +67,7 @@ export default function AdminLayout() {
                   }`
                 }
               >
-                <span className={`material-symbols-outlined text-[22px] transition-colors`}>
-                  {item.icon}
-                </span>
+                <span className="material-symbols-outlined text-[22px] transition-colors">{item.icon}</span>
                 {item.name}
               </NavLink>
             ))}
@@ -69,9 +75,9 @@ export default function AdminLayout() {
         </div>
 
         <div className="mt-auto p-4">
-          <div className="rounded-2xl bg-slate-800/50 p-4 border border-slate-700/50">
+          <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 font-bold text-primary-400 border border-slate-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-700 font-bold text-primary-400">
                 {user.initials}
               </div>
               <div className="flex-1 overflow-hidden">
@@ -80,19 +86,19 @@ export default function AdminLayout() {
               </div>
             </div>
             <button
-              onClick={logout}
+              onClick={() => {
+                void logout()
+              }}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-700/50 py-2.5 text-xs font-bold text-slate-300 transition-all hover:bg-red-500/10 hover:text-red-400"
             >
               <span className="material-symbols-outlined text-[18px]">logout</span>
-              Đăng xuất
+              Logout
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
         <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-slate-200 bg-white/80 px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
             <button
@@ -104,36 +110,29 @@ export default function AdminLayout() {
             <div>
               <h2 className="text-xl font-bold tracking-tight text-slate-900">{currentPage}</h2>
               <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                <span>Trang chủ</span>
+                <span>Home</span>
                 <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                 <span className="text-primary-600">{currentPage}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-8 w-[1px] bg-slate-200 mx-1"></div>
-            <div className="flex items-center gap-3 pl-1">
-              <div className="text-right hidden sm:block">
+          <div className="flex items-center gap-3 pl-1">
+              <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold text-slate-900">{user.name}</p>
-                <p className="text-[11px] font-medium text-green-600 flex items-center justify-end gap-1">
+                <p className="flex items-center justify-end gap-1 text-[11px] font-medium text-green-600">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                  Đang trực tuyến
+                  Online
                 </p>
               </div>
-              <img 
-                src={`https://ui-avatars.com/api/?name=${user.name}&background=eff6ff&color=2563eb&bold=true`} 
+              <img
+                src={`https://ui-avatars.com/api/?name=${user.name}&background=eff6ff&color=2563eb&bold=true`}
                 className="h-10 w-10 rounded-xl border-2 border-white shadow-sm"
                 alt="Avatar"
               />
-            </div>
           </div>
         </header>
 
-        {/* Viewport */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-10">
           <div className="mx-auto max-w-7xl">
             <Outlet />

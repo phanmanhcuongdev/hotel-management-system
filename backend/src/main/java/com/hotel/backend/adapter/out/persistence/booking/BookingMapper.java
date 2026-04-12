@@ -3,6 +3,8 @@ package com.hotel.backend.adapter.out.persistence.booking;
 import com.hotel.backend.application.domain.model.Booking;
 import com.hotel.backend.application.domain.model.BookingStatus;
 
+import java.math.BigDecimal;
+
 public final class BookingMapper {
     private BookingMapper() {}
 
@@ -17,7 +19,13 @@ public final class BookingMapper {
                 e.checkOut,
                 BookingStatus.valueOf(e.status),
                 e.createdAt,
-                e.updatedAt
+                e.updatedAt,
+                e.client != null ? e.client.id : null,
+                e.discount != null ? e.discount : BigDecimal.ZERO,
+                e.note,
+                e.user != null ? e.user.getId() : null,
+                e.user != null ? e.user.getUsername() : null,
+                e.user != null ? e.user.getFullName() : null
         );
     }
 
@@ -33,6 +41,8 @@ public final class BookingMapper {
         e.status = b.status().name();
         e.createdAt = b.createdAt();
         e.updatedAt = b.updatedAt();
+        e.discount = b.discount();
+        e.note = b.note();
         return e;
     }
 }

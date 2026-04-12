@@ -5,6 +5,7 @@ backend/.mvn/
 backend/*.log
 backend/.env
 backend/.env.*
+!backend/.env.example
 
 frontend/node_modules/
 frontend/dist/
@@ -13,6 +14,7 @@ frontend/coverage/
 frontend/*.log
 frontend/.env
 frontend/.env.*
+!frontend/.env.example
 
 *.class
 *.log

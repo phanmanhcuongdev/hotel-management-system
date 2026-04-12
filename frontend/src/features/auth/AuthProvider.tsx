@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { bootstrapSession, loginUser, logoutUser } from './authService'
+import { bootstrapSession, discardSession, loginUser, logoutUser } from './authService'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 import type { AuthSession } from './types'
 
@@ -8,20 +8,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null)
 
   useEffect(() => {
-    const storedSession = bootstrapSession()
+    let active = true
 
-    if (storedSession) {
-      setSession(storedSession)
-      setStatus('authenticated')
-      return
+    const initializeSession = async () => {
+      const storedSession = await bootstrapSession()
+
+      if (!active) {
+        return
+      }
+
+      if (storedSession) {
+        setSession(storedSession)
+        setStatus('authenticated')
+        return
+      }
+
+      setStatus('unauthenticated')
     }
 
-    setStatus('unauthenticated')
+    void initializeSession()
+
+    return () => {
+      active = false
+    }
   }, [])
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      logoutUser()
+      discardSession()
       setSession(null)
       setStatus('unauthenticated')
     }
@@ -44,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus('authenticated')
         return nextSession
       },
-      logout() {
-        logoutUser()
+      async logout() {
+        await logoutUser(session)
         setSession(null)
         setStatus('unauthenticated')
       },

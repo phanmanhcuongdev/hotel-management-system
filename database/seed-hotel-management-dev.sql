@@ -33,7 +33,7 @@ INSERT INTO `rooms` (`id`, `room_number`, `status`, `room_type_id`, `hotel_id`) 
 
 INSERT INTO `clients` (`id`, `id_card_number`, `full_name`, `address`, `email`, `phone`, `description`) VALUES
   (1, '079123456789', 'Nguyen Van A', 'Thu Duc, Ho Chi Minh City', 'guest1@example.com', '0900000001', 'Seeded returning guest'),
-  (2, '079987654321', 'Tran Thi B', 'District 7, Ho Chi Minh City', 'guest2@example.com', '0900000002', 'Seeded guest for pending booking');
+  (2, 'AUTO-PHONE-0900000002', 'Tran Thi B', 'UNKNOWN', 'guest2@example.com', '0900000002', 'Auto-created from booking flow. Needs profile review.');
 
 INSERT INTO `user` (`id`, `username`, `password`, `full_name`, `position`, `mail`, `description`) VALUES
   (

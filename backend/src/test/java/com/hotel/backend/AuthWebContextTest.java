@@ -6,7 +6,9 @@ import com.hotel.backend.adapter.in.web.auth.AuthController;
 import com.hotel.backend.adapter.out.security.JwtAuthenticationFilter;
 import com.hotel.backend.adapter.out.security.JwtTokenProvider;
 import com.hotel.backend.application.port.in.auth.LoadAuthenticatedUserUseCase;
+import com.hotel.backend.application.port.in.auth.ChangePasswordUseCase;
 import com.hotel.backend.application.port.in.auth.LoginUseCase;
+import com.hotel.backend.application.port.in.auth.LogoutUseCase;
 import com.hotel.backend.config.ObjectMapperConfig;
 import com.hotel.backend.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,12 @@ class AuthWebContextTest {
 
     @MockitoBean
     private LoadAuthenticatedUserUseCase loadAuthenticatedUserUseCase;
+
+    @MockitoBean
+    private LogoutUseCase logoutUseCase;
+
+    @MockitoBean
+    private ChangePasswordUseCase changePasswordUseCase;
 
     @Test
     void webContextLoads() {

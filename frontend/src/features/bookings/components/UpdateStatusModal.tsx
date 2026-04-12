@@ -16,7 +16,6 @@ const TRANSITION_OPTIONS: Record<BookingStatus, { value: BookingStatus; label: s
     { value: 'CANCELLED', label: 'Cancelled' },
   ],
   CONFIRMED: [
-    { value: 'COMPLETED', label: 'Completed' },
     { value: 'CANCELLED', label: 'Cancelled' },
   ],
   CANCELLED: [],
@@ -65,7 +64,7 @@ export function UpdateStatusModal({ isOpen, onClose, onSubmit, booking, loading 
           />
         ) : (
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Booking nay khong con transition hop le de cap nhat.
+            This booking no longer has a valid status transition.
           </div>
         )}
 

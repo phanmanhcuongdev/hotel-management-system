@@ -1,5 +1,6 @@
 package com.hotel.backend.application.port.in;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record CreateBookingCommand(
@@ -8,5 +9,8 @@ public record CreateBookingCommand(
         String email,
         Long roomId,
         LocalDate checkIn,
-        LocalDate checkOut
+        LocalDate checkOut,
+        BigDecimal discount,
+        String note,
+        String actorUsername
 ) {}

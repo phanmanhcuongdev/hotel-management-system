@@ -6,7 +6,8 @@ import com.hotel.backend.adapter.out.persistence.room.SpringDataRoomRepository;
 import com.hotel.backend.adapter.out.persistence.user.UserEntity;
 import com.hotel.backend.adapter.out.persistence.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -22,8 +23,9 @@ import java.util.List;
 @Component
 @Profile("dev")
 @RequiredArgsConstructor
-@Slf4j
 public class DevDataSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DevDataSeeder.class);
 
     private final UserRepository userRepository;
     private final SpringDataRoomRepository roomRepository;

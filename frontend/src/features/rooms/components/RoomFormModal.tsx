@@ -5,8 +5,8 @@ import { Button, Input, Modal } from '../../../components/ui'
 import type { Room, RoomType } from '../../../types'
 
 const roomSchema = z.object({
-  roomNumber: z.string().min(1, 'So phong khong duoc de trong'),
-  roomTypeId: z.string().min(1, 'Vui long chon loai phong'),
+  roomNumber: z.string().min(1, 'Room number is required'),
+  roomTypeId: z.string().min(1, 'Please choose a room type'),
   status: z.enum(['AVAILABLE', 'OCCUPIED', 'MAINTENANCE']),
 })
 
@@ -22,15 +22,15 @@ interface RoomFormModalProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'AVAILABLE', label: 'San sang', icon: 'check_circle', color: 'text-emerald-500' },
-  { value: 'OCCUPIED', label: 'Dang o', icon: 'person_pin', color: 'text-rose-500' },
-  { value: 'MAINTENANCE', label: 'Bao tri', icon: 'build', color: 'text-slate-400' },
+  { value: 'AVAILABLE', label: 'Available', icon: 'check_circle', color: 'text-emerald-500' },
+  { value: 'OCCUPIED', label: 'Occupied', icon: 'person_pin', color: 'text-rose-500' },
+  { value: 'MAINTENANCE', label: 'Maintenance', icon: 'build', color: 'text-slate-400' },
 ] as const
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat('vi-VN', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'USD',
     maximumFractionDigits: 0,
   }).format(price)
 }
@@ -65,20 +65,20 @@ export function RoomFormModal({ isOpen, onClose, onSubmit, room, roomTypes, load
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={room ? 'Cap nhat thong tin phong' : 'Them phong nghi moi'} size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title={room ? 'Edit Room' : 'Create Room'} size="lg">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Input
             id="roomNumber"
-            label="So phong (Vi du: 101, 202...)"
-            placeholder="Nhap so phong..."
+            label="Room Number"
+            placeholder="Enter room number"
             error={errors.roomNumber?.message}
             {...register('roomNumber')}
             className="rounded-2xl border-slate-200 focus:ring-primary-100"
           />
 
           <div className="space-y-2">
-            <label className="ml-1 text-sm font-bold text-slate-700">Trang thai ban dau</label>
+            <label className="ml-1 text-sm font-bold text-slate-700">Initial Status</label>
             <Controller
               name="status"
               control={control}
@@ -108,7 +108,7 @@ export function RoomFormModal({ isOpen, onClose, onSubmit, room, roomTypes, load
 
         <div className="space-y-4">
           <div className="ml-1 flex items-center justify-between">
-            <label className="text-sm font-bold text-slate-700">Chon loai phong</label>
+            <label className="text-sm font-bold text-slate-700">Room Type</label>
             {errors.roomTypeId && <span className="animate-pulse text-xs font-bold text-rose-500">{errors.roomTypeId.message}</span>}
           </div>
 
@@ -134,10 +134,13 @@ export function RoomFormModal({ isOpen, onClose, onSubmit, room, roomTypes, load
                         </div>
                         <p className="text-base font-black italic uppercase tracking-tight">{type.name}</p>
                         <p className={`mt-1 text-[10px] font-medium leading-relaxed ${isActive ? 'text-slate-400' : 'text-slate-500'}`}>
-                          Suc chua {type.capacity} khach.
+                          Capacity {type.capacity} guests.
+                        </p>
+                        <p className={`mt-2 min-h-10 text-[11px] ${isActive ? 'text-slate-300' : 'text-slate-500'}`}>
+                          {type.description || 'No description'}
                         </p>
                         <div className={`mt-4 text-sm font-black ${isActive ? 'text-primary-400' : 'text-slate-900'}`}>
-                          {formatPrice(type.price)} <span className="text-[10px] font-bold opacity-60">/ dem</span>
+                          {formatPrice(type.price)} <span className="text-[10px] font-bold opacity-60">/ night</span>
                         </div>
                         {isActive && (
                           <div className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 shadow-lg">
@@ -152,17 +155,17 @@ export function RoomFormModal({ isOpen, onClose, onSubmit, room, roomTypes, load
             />
           ) : (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Khong the tai danh muc loai phong tu du lieu hien co. Tam thoi khong the tao moi hoac doi loai phong.
+              No room types are available yet. Create a room type first before adding or editing rooms.
             </div>
           )}
         </div>
 
         <div className="flex gap-3 pt-4">
           <Button type="button" variant="ghost" onClick={handleClose} className="flex-1 rounded-2xl py-6 font-bold hover:bg-slate-50">
-            Huy bo
+            Cancel
           </Button>
           <Button type="submit" loading={loading} disabled={!hasRoomTypeOptions} className="flex-[2] rounded-2xl bg-slate-900 py-6 font-bold shadow-xl shadow-slate-200">
-            {room ? 'Luu thay doi' : 'Xac nhan them phong'}
+            {room ? 'Save Room' : 'Create Room'}
           </Button>
         </div>
       </form>

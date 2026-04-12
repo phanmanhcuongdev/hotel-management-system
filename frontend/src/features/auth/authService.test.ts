@@ -15,8 +15,8 @@ describe('authService', () => {
     })
 
     expect(session.mode).toBe('mock')
-    expect(session.user.role).toBe('Administrator')
-    expect(bootstrapSession()?.token).toBe('mock-hotel-admin-token')
+    expect(session.user.role).toBe('ADMIN')
+    await expect(bootstrapSession()).resolves.toMatchObject({ token: 'mock-hotel-admin-token' })
   })
 
   it('stores non-remembered sessions in sessionStorage only', async () => {
@@ -37,19 +37,19 @@ describe('authService', () => {
         password: 'bad-pass',
         remember: true,
       })
-    ).rejects.toThrow('Sai tài khoản demo')
+    ).rejects.toThrow('Invalid demo credentials')
   })
 
   it('clears session on logout', async () => {
-    await loginUser({
+    const session = await loginUser({
       username: 'admin',
       password: 'admin123',
       remember: true,
     })
 
-    logoutUser()
+    await logoutUser(session)
 
-    expect(bootstrapSession()).toBeNull()
+    await expect(bootstrapSession()).resolves.toBeNull()
     expect(window.localStorage.getItem('hotel.auth.session')).toBeNull()
     expect(window.sessionStorage.getItem('hotel.auth.session')).toBeNull()
   })

@@ -7,4 +7,6 @@ public interface ManagerRoomUseCase {
     Room createRoom(String roomNumber, RoomStatus status, Long roomTypeId);
 
     Room updateRoom(Long id, String roomNumber, RoomStatus status, Long roomTypeId);
+
+    void deleteRoom(Long id);
 }
