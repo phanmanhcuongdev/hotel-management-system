@@ -17,24 +17,46 @@ Internal single-property hotel operations system with a Spring Boot backend, Rea
 
 ## Quick start
 1. For local MySQL development, create the schema with `database/reset-hotel-management-dev.sql` and seed it with `database/seed-hotel-management-dev.sql`.
-2. Start the backend in local dev mode with the bundled H2 profile:
-   `cd backend && ./mvnw spring-boot:run "-Dspring-boot.run.profiles=dev"`
-3. Start the frontend:
-   `cd frontend && npm install && npm run dev`
-4. In development, the Vite dev server proxies `/api` requests to `http://127.0.0.1:8080` by default.
+2. Start the backend in local dev mode with the bundled H2 profile and optional dev admin seed:
+   ```powershell
+   cd backend
+   $env:SPRING_PROFILES_ACTIVE="dev"
+   $env:APP_DEV_SEED_ADMIN_USERNAME="admin"
+   $env:APP_DEV_SEED_ADMIN_PASSWORD="123456"
+   ./mvnw spring-boot:run
+   ```
+3. Start the frontend in local dev mode:
+   ```powershell
+   cd frontend
+   npm install
+   $env:VITE_API_BASE_URL="/api"
+   $env:VITE_DEV_API_PROXY_TARGET="http://127.0.0.1:8080"
+   $env:VITE_ENABLE_REAL_AUTH="true"
+   $env:VITE_ENABLE_MOCK_AUTH="false"
+   npm run dev
+   ```
+4. In local development, use `admin / 123456` if you started the backend with the dev seed variables above.
 
 ## Environment setup
 
 ### Frontend
-- Copy `frontend/.env.example` if you need custom values.
+- `frontend/.env.example` is a sample file only. Vite does not load `.env.example` automatically.
+- For local PowerShell runs, set the variables explicitly before `npm run dev`, or copy the values into `frontend/.env`.
 - Default behavior:
   - `VITE_API_BASE_URL=/api`
   - `VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:8080`
+- To force real backend auth in local dev:
+  - `VITE_ENABLE_REAL_AUTH=true`
+  - `VITE_ENABLE_MOCK_AUTH=false`
 - In local development, keep `VITE_API_BASE_URL=/api` and let Vite proxy API traffic to the backend.
 - In production or separate deployments, set `VITE_API_BASE_URL` to the real API origin if `/api` is not served from the same host.
 
 ### Backend
 - For local development, use the `dev` Spring profile. It starts against the in-memory H2 database and does not require external `DB_*` or `JWT_*` environment variables.
+- To seed a dev admin account in `dev`, set:
+  - `APP_DEV_SEED_ADMIN_USERNAME`
+  - `APP_DEV_SEED_ADMIN_PASSWORD`
+- The dev seed password must be plain text. The backend encodes it before saving.
 - For production-style runs, use the default profile and provide values from `backend/.env.example`:
   - `DB_URL`
   - `DB_USERNAME`
