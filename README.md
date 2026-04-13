@@ -46,6 +46,14 @@ Internal single-property hotel operations system with a Spring Boot backend, Rea
   ```powershell
   .\scripts\Start-Frontend-Dev.ps1
   ```
+- Start the backend with a real database:
+  ```powershell
+  .\scripts\Start-Backend-Db.ps1 -DbUrl "jdbc:mysql://127.0.0.1:3306/hotel_management" -DbUsername "root" -DbPassword "your-password"
+  ```
+- Start both backend and frontend with a real database:
+  ```powershell
+  .\scripts\Start-Dev-Db.ps1 -DbUrl "jdbc:mysql://127.0.0.1:3306/hotel_management" -DbUsername "root" -DbPassword "your-password"
+  ```
 - Start both backend and frontend in separate PowerShell windows:
   ```powershell
   .\scripts\Start-Dev-H2.ps1
@@ -53,6 +61,8 @@ Internal single-property hotel operations system with a Spring Boot backend, Rea
 - Override defaults if needed:
   ```powershell
   .\scripts\Start-Backend-H2.ps1 -AdminUsername "admin" -AdminPassword "123456"
+  .\scripts\Start-Backend-Db.ps1 -DbUrl "jdbc:mysql://127.0.0.1:3306/hotel_management" -DbUsername "root" -DbPassword "your-password"
+  .\scripts\Start-Dev-Db.ps1 -DbUrl "jdbc:mysql://127.0.0.1:3306/hotel_management" -DbUsername "root" -DbPassword "your-password"
   .\scripts\Start-Frontend-Dev.ps1 -ApiProxyTarget "http://127.0.0.1:8080"
   ```
 - The frontend script automatically runs `npm install` if `frontend/node_modules` is missing.
