@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { AppErrorBoundary } from './components/AppErrorBoundary'
 import { AuthProvider } from './features/auth/AuthProvider'
+import { NotificationToastViewport } from './features/notifications/NotificationToastViewport'
 import './index.css'
 import 'material-symbols'
 import '@fontsource/inter/400.css'
@@ -28,6 +29,7 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <BrowserRouter>
             <App />
+            <NotificationToastViewport />
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>

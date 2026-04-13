@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { Button } from '../../components/ui'
 import { MOCK_AUTH_ENABLED } from './authService'
 import { useAuth } from './useAuth'
+import { notifySuccess } from '../notifications/notificationStore'
 
 const loginSchema = z.object({
   username: z.string().trim().min(1, 'Please enter an email or username'),
@@ -49,6 +50,7 @@ export default function LoginPage() {
     setSubmitError(null)
     try {
       await login(values)
+      notifySuccess('Login successful', 'Welcome back to Grand Hotel Hub.')
       navigate(redirectTo, { replace: true })
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed. Please try again.'

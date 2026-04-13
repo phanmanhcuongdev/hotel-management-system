@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Button, Card, CardContent, CardHeader } from '../../../components/ui'
 import type { Booking, BookingStatus, CreateBookingRequest, UpdateBookingDetailsRequest } from '../../../types'
 import { useAuth } from '../../auth/useAuth'
+import { notifySuccess } from '../../notifications/notificationStore'
 import { BookingDetailModal, BookingTable, CreateBookingModal, UpdateStatusModal } from '../components'
 import { EditBookingDetailsModal } from '../components/EditBookingDetailsModal'
 import { useBooking, useBookings, useCancelBooking, useCheckInBooking, useCheckOutBooking, useCreateBooking, useUpdateBooking, useUpdateBookingDetails } from '../hooks/useBookings'
@@ -20,7 +21,6 @@ export default function BookingListPage() {
   const [isEditDetailsModalOpen, setEditDetailsModalOpen] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [searchValue, setSearchValue] = useState(initialKeyword)
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
   const deferredSearchValue = useDeferredValue(searchValue.trim())
   const requestedBookingId = Number.isInteger(initialOpenBookingId) && initialOpenBookingId > 0 ? initialOpenBookingId : null
 
@@ -108,7 +108,7 @@ export default function BookingListPage() {
     if (confirm(`Are you sure you want to cancel booking #${booking.id}?`)) {
       cancelBooking.mutate(booking.id, {
         onSuccess: () => {
-          setFeedbackMessage(`Booking #${booking.id} cancelled.`)
+          notifySuccess('Booking cancelled', `Booking #${booking.id} was cancelled successfully.`)
         },
       })
     }
@@ -120,7 +120,7 @@ export default function BookingListPage() {
     createBooking.mutate(data, {
       onSuccess: () => {
         setCreateModalOpen(false)
-        setFeedbackMessage('Booking created successfully.')
+        notifySuccess('Booking created', 'Booking created successfully.')
       },
     })
   }
@@ -131,7 +131,7 @@ export default function BookingListPage() {
     if (confirm(`Check in booking #${booking.id} for room ${booking.room?.roomNumber ?? ''}?`)) {
       checkInBooking.mutate(booking.id, {
         onSuccess: () => {
-          setFeedbackMessage(`Booking #${booking.id} checked in successfully.`)
+          notifySuccess('Booking checked in', `Booking #${booking.id} checked in successfully.`)
         },
       })
     }
@@ -143,7 +143,7 @@ export default function BookingListPage() {
     if (confirm(`Checkout booking #${booking.id} and release the room?`)) {
       checkOutBooking.mutate(booking.id, {
         onSuccess: (updatedBooking) => {
-          setFeedbackMessage(`Booking #${booking.id} checked out successfully.`)
+          notifySuccess('Booking checked out', `Booking #${booking.id} checked out successfully.`)
           setSelectedBooking(updatedBooking)
           setDetailModalOpen(true)
         },
@@ -159,6 +159,7 @@ export default function BookingListPage() {
       {
         onSuccess: () => {
           setUpdateModalOpen(false)
+          notifySuccess('Booking status updated', `Booking #${selectedBooking.id} status changed to ${status}.`)
           setSelectedBooking(null)
         },
       }
@@ -174,7 +175,7 @@ export default function BookingListPage() {
         onSuccess: (updatedBooking) => {
           setSelectedBooking(updatedBooking)
           setEditDetailsModalOpen(false)
-          setFeedbackMessage(`Booking #${updatedBooking.id} details updated.`)
+          notifySuccess('Booking updated', `Booking #${updatedBooking.id} details updated.`)
         },
       }
     )
@@ -209,8 +210,6 @@ export default function BookingListPage() {
       </div>
 
       {pageErrorMessage && <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">{pageErrorMessage}</div>}
-
-      {feedbackMessage && <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">{feedbackMessage}</div>}
 
       <Card className="overflow-visible border-none shadow-2xl shadow-slate-200/50">
         <CardHeader

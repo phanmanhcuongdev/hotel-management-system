@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Card, CardContent, CardHeader, Table } from '../../../components/ui'
 import type { ClientSummary, UpdateClientRequest } from '../../../types'
 import { useAuth } from '../../auth/useAuth'
+import { notifySuccess } from '../../notifications/notificationStore'
 import { ClientFormModal } from '../components/ClientFormModal'
 import { useClient, useDeleteClient, useUpdateClient } from '../hooks/useClients'
 
@@ -14,7 +15,6 @@ export default function ClientDetailPage() {
   const clientId = Number(id)
 
   const [isEditOpen, setEditOpen] = useState(false)
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
 
   const { data: client, isLoading, error } = useClient(clientId, { enabled: isAdmin && Number.isFinite(clientId) })
   const updateClient = useUpdateClient()
@@ -36,7 +36,7 @@ export default function ClientDetailPage() {
       {
         onSuccess: () => {
           setEditOpen(false)
-          setFeedbackMessage('Client profile was updated.')
+          notifySuccess('Client updated', `${client.fullName} profile was updated.`)
         },
       },
     )
@@ -103,6 +103,7 @@ export default function ClientDetailPage() {
               if (confirm(`Delete client ${client.fullName}? This is only allowed when the client has no booking history.`)) {
                 deleteClient.mutate(client.id, {
                   onSuccess: () => {
+                    notifySuccess('Client deleted', `Client ${client.fullName} was deleted.`)
                     navigate('/clients', {
                       replace: true,
                     })
@@ -117,7 +118,6 @@ export default function ClientDetailPage() {
       </div>
 
       {pageErrorMessage && <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">{pageErrorMessage}</div>}
-      {feedbackMessage && <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">{feedbackMessage}</div>}
 
       {client.needsReview && (
         <div className="rounded-2xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm text-amber-900">

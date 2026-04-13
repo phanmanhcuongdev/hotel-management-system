@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/useAuth'
+import { NotificationBell } from '../features/notifications/NotificationBell'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'dashboard' },
@@ -118,6 +119,7 @@ export default function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-3 pl-1">
+              <NotificationBell />
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold text-slate-900">{user.name}</p>
                 <p className="flex items-center justify-end gap-1 text-[11px] font-medium text-green-600">

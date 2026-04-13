@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, Card, CardContent, CardHeader, Table } from '../../../components/ui'
 import type { ClientSummary, CreateClientRequest, UpdateClientRequest } from '../../../types'
 import { useAuth } from '../../auth/useAuth'
+import { notifySuccess } from '../../notifications/notificationStore'
 import { ClientFormModal } from '../components/ClientFormModal'
 import { useClients, useCreateClient, useDeleteClient, useUpdateClient } from '../hooks/useClients'
 
@@ -15,7 +16,6 @@ export default function ClientListPage() {
 
   const [searchValue, setSearchValue] = useState('')
   const [reviewFilter, setReviewFilter] = useState<ReviewFilter>('all')
-  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null)
   const [isModalOpen, setModalOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<ClientSummary | null>(null)
   const deferredSearchValue = useDeferredValue(searchValue.trim())
@@ -105,7 +105,7 @@ export default function ClientListPage() {
                 if (confirm(`Delete client ${item.fullName}? This is only allowed when the client has no booking history.`)) {
                   deleteClient.mutate(item.id, {
                     onSuccess: () => {
-                      setFeedbackMessage(`Client ${item.fullName} was deleted.`)
+                      notifySuccess('Client deleted', `Client ${item.fullName} was deleted.`)
                     },
                   })
                 }
@@ -125,7 +125,7 @@ export default function ClientListPage() {
       onSuccess: (createdClient) => {
         setModalOpen(false)
         setEditingClient(null)
-        setFeedbackMessage(`Client ${createdClient.fullName} was created.`)
+        notifySuccess('Client created', `Client ${createdClient.fullName} was created.`)
       },
     })
   }
@@ -141,7 +141,7 @@ export default function ClientListPage() {
         onSuccess: (updatedClient) => {
           setModalOpen(false)
           setEditingClient(null)
-          setFeedbackMessage(`Client ${updatedClient.fullName} was updated.`)
+          notifySuccess('Client updated', `Client ${updatedClient.fullName} was updated.`)
         },
       },
     )
@@ -176,7 +176,6 @@ export default function ClientListPage() {
       </div>
 
       {pageErrorMessage && <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">{pageErrorMessage}</div>}
-      {feedbackMessage && <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">{feedbackMessage}</div>}
 
       <Card className="border-none shadow-2xl shadow-slate-200/50">
         <CardHeader

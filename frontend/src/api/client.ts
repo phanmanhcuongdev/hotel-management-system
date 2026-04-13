@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { notifyError } from '../features/notifications/notificationStore'
 
 const SESSION_KEY = 'hotel.auth.session'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || '/api'
@@ -11,6 +12,7 @@ interface ApiErrorPayload {
 
 interface ApiRequestConfigMeta {
   skipGlobalErrorLog?: boolean
+  skipGlobalErrorNotify?: boolean
 }
 
 declare module 'axios' {
@@ -123,6 +125,14 @@ apiClient.interceptors.response.use(
     if (!error.config?.metadata?.skipGlobalErrorLog) {
       console.error('API Error:', error.response?.data || error.message)
     }
+
+    if (!error.config?.metadata?.skipGlobalErrorNotify) {
+      const status = normalizedError instanceof ApiClientError ? normalizedError.status : undefined
+      if (!status || status >= 500) {
+        notifyError('Request failed', normalizedError.message)
+      }
+    }
+
     return Promise.reject(normalizedError)
   }
 )
