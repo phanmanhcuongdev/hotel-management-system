@@ -14,11 +14,11 @@ interface ApiRequestConfigMeta {
 }
 
 declare module 'axios' {
-  interface AxiosRequestConfig<D = any> {
+  interface AxiosRequestConfig {
     metadata?: ApiRequestConfigMeta
   }
 
-  interface InternalAxiosRequestConfig<D = any> {
+  interface InternalAxiosRequestConfig {
     metadata?: ApiRequestConfigMeta
   }
 }

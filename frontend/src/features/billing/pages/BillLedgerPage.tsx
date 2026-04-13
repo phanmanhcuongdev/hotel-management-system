@@ -160,7 +160,7 @@ export default function BillLedgerPage() {
         ),
       },
     ],
-    [bills],
+    [],
   )
 
   if (!isAdmin) {
