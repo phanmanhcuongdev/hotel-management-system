@@ -4,12 +4,14 @@ on:
   pull_request:
     branches:
       - 'release/**'
+      - 'main'
     paths:
       - 'backend/**'
       - '.github/workflows/build-backend.yaml'
   push:
     branches:
       - 'release/**'
+      - 'main'
     paths:
       - 'backend/**'
       - '.github/workflows/build-backend.yaml'
