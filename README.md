@@ -37,6 +37,26 @@ Internal single-property hotel operations system with a Spring Boot backend, Rea
    ```
 4. In local development, use `admin / 123456` if you started the backend with the dev seed variables above.
 
+## PowerShell scripts
+- Start only the backend with H2 and dev seed:
+  ```powershell
+  .\scripts\Start-Backend-H2.ps1
+  ```
+- Start only the frontend in Vite dev mode:
+  ```powershell
+  .\scripts\Start-Frontend-Dev.ps1
+  ```
+- Start both backend and frontend in separate PowerShell windows:
+  ```powershell
+  .\scripts\Start-Dev-H2.ps1
+  ```
+- Override defaults if needed:
+  ```powershell
+  .\scripts\Start-Backend-H2.ps1 -AdminUsername "admin" -AdminPassword "123456"
+  .\scripts\Start-Frontend-Dev.ps1 -ApiProxyTarget "http://127.0.0.1:8080"
+  ```
+- The frontend script automatically runs `npm install` if `frontend/node_modules` is missing.
+
 ## Environment setup
 
 ### Frontend
